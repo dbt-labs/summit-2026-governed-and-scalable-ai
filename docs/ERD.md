@@ -2,7 +2,7 @@
 
 Entity-relationship diagram for the 12 raw source tables. Same schema in every size tier (`seeds/medium_data/`, `seeds/large_data/`, `seeds/parquet_data/`).
 
-Types shown are the *logical* types staging models should cast to — in the raw CSVs everything arrives as text, and the ⚠️ columns carry deliberate messiness (see [README](README.md#deliberate-data-quirks-staging-layer-work)).
+Types shown are the *logical* types staging models should cast to — in the raw CSVs everything arrives as text, and the ⚠️ columns carry deliberate messiness (see [DATA_DICTIONARY.md](DATA_DICTIONARY.md#deliberate-data-quirks-staging-layer-work)).
 
 ```mermaid
 erDiagram
