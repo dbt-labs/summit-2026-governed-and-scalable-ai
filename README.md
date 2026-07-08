@@ -1,4 +1,4 @@
-# Merlin & Co. Apothecaries — raw source data
+# 🧙‍♀️✨🌿 Merlin & Co. Apothecaries — raw source data
 
 Wizard-themed, jaffle-shop-style raw source data. These CSVs are the dbt **seeds** that stand in for raw warehouse tables; the lab's dbt project builds staging → intermediate → marts on top of them.
 
