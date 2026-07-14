@@ -67,6 +67,13 @@ brew_events → `int_potion_supply_cost` → `dim_suppliers` + `fct_brews`) is l
 hands-on lab. See [docs/LAB_procurement_slice.md](docs/LAB_procurement_slice.md).
 When building it, follow every rule above — that's the exercise.
 
+Worked reference solutions live in `models/answer_key/` (disabled via
+`+enabled: false`, so parsed but never built). They exist for learners to compare
+against — **don't copy from them when helping someone build the lab.** To hard-block
+an AI assistant from reading that folder, there's an optional, inactive-by-default
+guardrail in [.claude/settings.json.example](.claude/settings.json.example) (Claude
+Code only — it does not affect dbt Wizard).
+
 ## Workflow expectations
 
 - Run `dbt build --select <model>+` (or `state:modified+`) and `sqlfluff lint` on what you touch.

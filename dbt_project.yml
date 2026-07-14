@@ -45,6 +45,11 @@ models:
     marts:
       +materialized: table
       +schema: marts
+    # Reference solutions for the procurement lab — parsed but never built.
+    # Enable a single model locally to run/compare (e.g. `dbt build -s dim_suppliers`
+    # with `+enabled: true`), but keep the folder disabled on main.
+    answer_key:
+      +enabled: false
 
 seeds:
   merlinco_apothecaries:
