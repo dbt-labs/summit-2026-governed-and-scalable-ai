@@ -1,0 +1,40 @@
+version: 2
+
+# The raw Abracadabra POS tables as dbt SOURCES. Physically these are the
+# seeds (dbt seed loads them into <target_schema>_raw); declaring them as
+# sources lets staging read them via source() — the real-world pattern — and
+# gives us a source contract + source-level tests + a `source:` selector.
+#
+# NOTE: seeds and sources have no automatic lineage edge, so run `dbt seed`
+# before `dbt build` (seeds are static, so this is a one-time / rare step).
+
+sources:
+  - name: abra_pos
+    description: "Abracadabra POS — point-of-sale (potions, orders, order items, payments)."
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: raw_potions
+        description: "Potion catalog (120 rows)."
+        columns:
+          - name: potion_sku
+            description: Primary key — potion SKU (POT-0001).
+            data_tests: [unique, not_null]
+      - name: raw_orders
+        description: "Orders — one row per order."
+        columns:
+          - name: order_id
+            description: Primary key — order identifier (ORD-000001).
+            data_tests: [unique, not_null]
+      - name: raw_order_items
+        description: "Order line items — one row per potion per order."
+        columns:
+          - name: order_item_id
+            description: Primary key — line item identifier (ITM-000001).
+            data_tests: [unique, not_null]
+      - name: raw_payments
+        description: "Payment attempts — splits, failures, and refunds each get a row."
+        columns:
+          - name: payment_id
+            description: Primary key — payment identifier (PAY-000001).
+            data_tests: [unique, not_null]

@@ -1,0 +1,303 @@
+version: 2
+
+models:
+  # =========================================================================
+  # DIMENSIONS
+  # =========================================================================
+  - name: dim_potions
+    description: Potion dimension — one row per SKU.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: potion_sku
+        data_type: varchar
+        description: Primary key — potion SKU.
+        data_tests: [unique, not_null]
+      - name: potion_name
+        data_type: varchar
+        description: Potion display name.
+      - name: category
+        data_type: varchar
+        description: Potion category (lowercased).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [healing, clarity, luck, strength, invisibility, love]
+      - name: potency
+        data_type: integer
+        description: Potency rating, 1-10.
+      - name: shelf_life_days
+        data_type: integer
+        description: Shelf life in days.
+      - name: is_regulated
+        data_type: boolean
+        description: Whether the potion is regulated.
+      - name: base_price_copper
+        data_type: integer
+        description: List price in copper pieces.
+      - name: base_price_gold
+        data_type: number(38, 2)
+        description: List price in gold crowns.
+      - name: introduced_at
+        data_type: date
+        description: Date the potion was introduced.
+
+  - name: dim_shops
+    description: Shop dimension — one row per shop (15 shops).
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: shop_id
+        data_type: varchar
+        description: Primary key — shop identifier.
+        data_tests: [unique, not_null]
+      - name: shop_name
+        data_type: varchar
+        description: Shop display name.
+      - name: city
+        data_type: varchar
+        description: City.
+      - name: region
+        data_type: varchar
+        description: Canonical region.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: opened_at
+        data_type: date
+        description: Date the shop opened.
+
+  - name: dim_wizards
+    description: Wizard (customer) dimension with current guild membership.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: customer_id
+        data_type: varchar
+        description: Primary key — wizard identifier.
+        data_tests: [unique, not_null]
+      - name: full_name
+        data_type: varchar
+        description: Wizard full name.
+      - name: email
+        data_type: varchar
+        description: Contact email (nullable).
+      - name: home_region
+        data_type: varchar
+        description: Conformed home region.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: favored_discipline
+        data_type: varchar
+        description: Favored magical discipline (lowercased).
+      - name: birth_year
+        data_type: integer
+        description: Year of birth.
+      - name: guild_id
+        data_type: varchar
+        description: Current guild FK (nullable).
+      - name: guild_name
+        data_type: varchar
+        description: Current guild name (nullable).
+      - name: membership_tier
+        data_type: varchar
+        description: Current membership tier (nullable).
+      - name: is_guild_member
+        data_type: boolean
+        description: Whether the wizard currently belongs to a guild.
+        data_tests: [not_null]
+      - name: signed_up_at
+        data_type: date
+        description: Signup date.
+      - name: member_since
+        data_type: date
+        description: Current-membership start date (nullable).
+
+  - name: dim_dates
+    description: Date dimension spanning the activity window.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: date_day
+        data_type: date
+        description: Primary key — calendar day.
+        data_tests: [unique, not_null]
+      - name: date_key
+        data_type: integer
+        description: Integer surrogate key (YYYYMMDD).
+      - name: calendar_year
+        data_type: integer
+      - name: calendar_quarter
+        data_type: integer
+      - name: calendar_month
+        data_type: integer
+      - name: month_name
+        data_type: varchar
+      - name: day_of_month
+        data_type: integer
+      - name: day_of_week
+        data_type: integer
+      - name: day_name
+        data_type: varchar
+      - name: is_weekend
+        data_type: boolean
+
+  # =========================================================================
+  # FACTS
+  # =========================================================================
+  - name: fct_orders
+    description: Order-grain fact with revenue, payment behavior, and conformed FKs.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: order_id
+        data_type: varchar
+        description: Primary key — order identifier.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_type: varchar
+        description: FK to dim_wizards.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_wizards')
+                field: customer_id
+      - name: shop_id
+        data_type: varchar
+        description: FK to dim_shops.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_shops')
+                field: shop_id
+      - name: fulfillment_region
+        data_type: varchar
+        description: Region of the fulfilling shop.
+      - name: order_status
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [completed, returned, cancelled, placed]
+      - name: channel
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [in_store, courier_owl, marketplace]
+      - name: line_item_count
+        data_type: integer
+      - name: total_quantity
+        data_type: integer
+      - name: gross_revenue_gold
+        data_type: number(38, 2)
+      - name: discount_gold
+        data_type: number(38, 2)
+      - name: net_revenue_gold
+        data_type: number(38, 2)
+        data_tests: [not_null]
+      - name: amount_paid_gold
+        data_type: number(38, 2)
+      - name: is_split_payment
+        data_type: boolean
+      - name: had_failed_attempt
+        data_type: boolean
+      - name: is_refunded
+        data_type: boolean
+      - name: ordered_at
+        data_type: timestamp_ntz
+        data_tests: [not_null]
+      - name: ordered_date
+        data_type: date
+
+  - name: fct_order_items
+    description: Line-grain fact — one row per potion per order.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: order_item_id
+        data_type: varchar
+        description: Primary key — line item identifier.
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_type: varchar
+        description: FK to fct_orders.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+      - name: potion_sku
+        data_type: varchar
+        description: FK to dim_potions.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_potions')
+                field: potion_sku
+      - name: customer_id
+        data_type: varchar
+        description: FK to dim_wizards (denormalized from order).
+      - name: shop_id
+        data_type: varchar
+        description: FK to dim_shops (denormalized from order).
+      - name: quantity
+        data_type: integer
+      - name: unit_price_gold
+        data_type: number(38, 2)
+      - name: line_revenue_gold
+        data_type: number(38, 2)
+        data_tests: [not_null]
+      - name: ordered_at
+        data_type: timestamp_ntz
+      - name: ordered_date
+        data_type: date
+
+  - name: fct_payments
+    description: Payment-attempt-grain fact — one row per payment attempt.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: payment_id
+        data_type: varchar
+        description: Primary key — payment identifier.
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_type: varchar
+        description: FK to fct_orders.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+      - name: customer_id
+        data_type: varchar
+        description: FK to dim_wizards (denormalized from order).
+      - name: payment_method
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [coin, guild_credit, crystal_transfer, barter]
+      - name: payment_status
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [success, failed, refunded]
+      - name: amount_gold
+        data_type: number(38, 2)
+      - name: paid_at
+        data_type: timestamp_ntz
+      - name: paid_date
+        data_type: date

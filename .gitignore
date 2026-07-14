@@ -8,3 +8,24 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Not required for the training dbt project (kept on disk, out of the repo).
+# The project builds on seeds/medium_data only.
+# --- data-authoring / scratch scripts + their python project ---
+main.py
+scripts/generate_data.py
+scripts/export_parquet.py
+pyproject.toml
+.python-version
+# --- unused data tiers (dbt uses seeds/medium_data) ---
+seeds/large_data/
+seeds/parquet_data/
+
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+.dbt/
+# never commit real credentials
+profiles.yml
+dbt_internal_packages/

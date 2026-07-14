@@ -1,0 +1,50 @@
+version: 2
+
+# Raw Alembic Ops tables as dbt sources (loaded from seeds into
+# <target_schema>_raw). See _abra_pos__sources.yml for the seed/source note.
+#
+# All five tables are declared here, including the four procurement tables
+# whose staging models are the hands-on lab (docs/LAB_procurement_slice.md).
+# The lab builds stg models on top of these existing source declarations.
+
+sources:
+  - name: alembic_ops
+    description: "Alembic Ops — production & procurement (shops, suppliers, ingredients, recipes, brews)."
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: raw_shops
+        description: "Shops (15 rows, 3 per region). region is the canonical spelling."
+        columns:
+          - name: shop_id
+            description: Primary key — shop identifier (SHP-01).
+            data_tests: [unique, not_null]
+
+      # ---- procurement / supply-cost slice (lab source tables) ----
+      - name: raw_suppliers
+        description: "Ingredient suppliers."
+        columns:
+          - name: supplier_id
+            description: Primary key — supplier identifier (SUP-01).
+            data_tests: [unique, not_null]
+      - name: raw_ingredients
+        description: "Ingredients, each sourced from one supplier."
+        columns:
+          - name: ingredient_id
+            description: Primary key — ingredient identifier (ING-001).
+            data_tests: [unique, not_null]
+      - name: raw_potion_ingredients
+        description: "Recipe bridge — composite key (potion_sku, ingredient_id)."
+        columns:
+          - name: potion_sku
+            description: Part of composite key; FK to raw_potions.
+            data_tests: [not_null]
+          - name: ingredient_id
+            description: Part of composite key; FK to raw_ingredients.
+            data_tests: [not_null]
+      - name: raw_brew_events
+        description: "Production batches — one row per brew."
+        columns:
+          - name: brew_id
+            description: Primary key — brew identifier (BRW-00001).
+            data_tests: [unique, not_null]

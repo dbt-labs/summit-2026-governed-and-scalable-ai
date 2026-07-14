@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: stg_grimoire_crm__customers
+    description: >
+      One row per wizard (customer). home_region conformed to the canonical
+      shop regions, favored_discipline lowercased, blank emails nulled.
+    columns:
+      - name: customer_id
+        description: Primary key — wizard identifier (WIZ-00001).
+        data_tests: [unique, not_null]
+      - name: email
+        description: Contact email; ~2% null in the raw feed.
+      - name: home_region
+        description: Home region, conformed to canonical shop regions.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: birth_year
+        description: Year of birth (1885-2007).
+
+  - name: stg_grimoire_crm__guilds
+    description: One row per arcane guild.
+    columns:
+      - name: guild_id
+        description: Primary key — guild identifier (GLD-01).
+        data_tests: [unique, not_null]
+      - name: guild_name
+        description: Guild display name.
+        data_tests: [not_null]
+
+  - name: stg_grimoire_crm__guild_memberships
+    description: >
+      SCD2 membership history — one row per customer-guild-tier interval.
+      `is_current` flags the open row (raw valid_to blank).
+    columns:
+      - name: membership_id
+        description: Primary key — membership identifier (MEM-00001).
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: FK to the member wizard.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_grimoire_crm__customers')
+                field: customer_id
+      - name: guild_id
+        description: FK to the guild.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_grimoire_crm__guilds')
+                field: guild_id
+      - name: tier
+        description: Membership tier, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [apprentice, adept, archmage]
+      - name: is_current
+        description: True when this is the open (current) membership row.
+        data_tests: [not_null]

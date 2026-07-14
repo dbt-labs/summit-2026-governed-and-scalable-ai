@@ -1,0 +1,34 @@
+version: 2
+
+# Governed metric definitions. These are the canonical numbers the business
+# (and any AI assistant querying the semantic layer) is allowed to report.
+
+metrics:
+  - name: total_net_revenue
+    description: Net revenue across all orders, in gold crowns.
+    type: simple
+    label: Total net revenue (gold)
+    type_params:
+      measure: net_revenue
+
+  - name: total_orders
+    description: Count of orders.
+    type: simple
+    label: Total orders
+    type_params:
+      measure: order_count
+
+  - name: average_order_value
+    description: Net revenue per order, in gold crowns.
+    type: ratio
+    label: Average order value (gold)
+    type_params:
+      numerator: net_revenue
+      denominator: order_count
+
+  - name: total_units_sold
+    description: Total potion units sold across all order lines.
+    type: simple
+    label: Total units sold
+    type_params:
+      measure: units_sold

@@ -1,7 +1,0 @@
-[project]
-name = "merlinco-apothecaries"
-version = "0.1.0"
-description = "Wizard-themed, jaffle-shop-style raw source data."
-readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []

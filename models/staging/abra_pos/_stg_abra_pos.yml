@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: stg_abra_pos__potions
+    description: >
+      One row per potion SKU from the Abracadabra POS catalog. Category
+      lowercased, messy `is_regulated` boolean normalized, copper price
+      exposed in gold alongside the raw copper integer.
+    columns:
+      - name: potion_sku
+        description: Primary key — potion stock-keeping unit (POT-0001).
+        data_tests: [unique, not_null]
+      - name: category
+        description: Potion category, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [healing, clarity, luck, strength, invisibility, love]
+      - name: is_regulated
+        description: Whether the potion is subject to arcane regulation.
+      - name: base_price_gold
+        description: List price in gold crowns (copper / 100).
+        data_tests: [not_null]
+
+  - name: stg_abra_pos__orders
+    description: One row per order. Status/channel lowercased, ordered_at parsed from two raw formats.
+    columns:
+      - name: order_id
+        description: Primary key — order identifier (ORD-000001).
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: FK to the placing wizard.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_grimoire_crm__customers')
+                field: customer_id
+      - name: shop_id
+        description: FK to the fulfilling shop.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops')
+                field: shop_id
+      - name: order_status
+        description: Order status, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [completed, returned, cancelled, placed]
+      - name: channel
+        description: Sales channel, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [in_store, courier_owl, marketplace]
+      - name: ordered_at
+        description: Order timestamp (TIMESTAMP_NTZ), parsed from dual raw formats.
+        data_tests: [not_null]
+
+  - name: stg_abra_pos__order_items
+    description: One row per potion per order (line grain). No repeated SKU within an order.
+    columns:
+      - name: order_item_id
+        description: Primary key — line item identifier (ITM-000001).
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: FK to the parent order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__orders')
+                field: order_id
+      - name: potion_sku
+        description: FK to the potion sold.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: quantity
+        description: Units sold on this line (1-5).
+        data_tests: [not_null]
+      - name: line_revenue_gold
+        description: quantity * unit_price, in gold crowns.
+        data_tests: [not_null]
+
+  - name: stg_abra_pos__payments
+    description: One row per payment attempt. Orders may split across payments or have a failed attempt.
+    columns:
+      - name: payment_id
+        description: Primary key — payment identifier (PAY-000001).
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: FK to the paid order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__orders')
+                field: order_id
+      - name: payment_method
+        description: Payment method, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [coin, guild_credit, crystal_transfer, barter]
+      - name: payment_status
+        description: Payment attempt status, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [success, failed, refunded]

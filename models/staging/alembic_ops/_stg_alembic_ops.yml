@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__shops
+    description: >
+      One row per shop (15 shops, 3 per region). `region` is the canonical
+      spelling used to conform customers.home_region upstream.
+    columns:
+      - name: shop_id
+        description: Primary key — shop identifier (SHP-01).
+        data_tests: [unique, not_null]
+      - name: shop_name
+        description: Shop display name.
+        data_tests: [not_null]
+      - name: region
+        description: Canonical region (five values).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+
+# ---------------------------------------------------------------------------
+# NOTE: suppliers, ingredients, potion_ingredients, and brew_events are the
+# `alembic_ops` procurement / supply-cost slice deliberately left UNBUILT for
+# the hands-on "plan -> design -> build with AI" lab. See
+# docs/LAB_procurement_slice.md. Their source tables are declared in
+# _alembic_ops__sources.yml and loaded by `dbt seed`.
+# ---------------------------------------------------------------------------

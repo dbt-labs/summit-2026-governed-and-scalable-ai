@@ -1,0 +1,55 @@
+name: "merlinco_apothecaries"
+version: "1.0.0"
+config-version: 2
+
+# Connection profile. Locally this resolves against ~/.dbt/profiles.yml
+# (see profiles.example.yml); in the dbt platform the connection is managed
+# in the UI and this profile name is ignored.
+profile: "merlinco_apothecaries"
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds/medium_data"] # one tier only — filenames collide across tiers
+test-paths: ["tests"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# ---------------------------------------------------------------------------
+# Variables — the raw order window, used by dim_dates' date spine
+# ---------------------------------------------------------------------------
+vars:
+  date_spine_start: "2023-01-01" # earliest customer signup precedes first order
+  date_spine_end: "2026-12-31"
+
+# ---------------------------------------------------------------------------
+# Materialization + layering conventions (enforced project-wide)
+#   staging      -> view      (thin, 1:1 with source)
+#   intermediate -> ephemeral (never persisted; composed into marts)
+#   marts        -> table     (contracted, tested, exposed)
+# ---------------------------------------------------------------------------
+models:
+  merlinco_apothecaries:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table
+      +schema: marts
+
+seeds:
+  merlinco_apothecaries:
+    +schema: raw
+    # Load every raw column as text so the deliberate quirks (mixed case,
+    # dual timestamp formats, messy booleans) survive intact — staging does
+    # the cleaning. This mirrors how a real raw landing zone behaves.
+    +quote_columns: false

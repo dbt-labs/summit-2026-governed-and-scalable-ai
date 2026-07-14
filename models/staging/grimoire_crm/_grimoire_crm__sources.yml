@@ -1,0 +1,29 @@
+version: 2
+
+# Raw Grimoire CRM tables as dbt sources (loaded from seeds into
+# <target_schema>_raw). See _abra_pos__sources.yml for the seed/source note.
+
+sources:
+  - name: grimoire_crm
+    description: "Grimoire CRM — customers (wizards), guilds, and SCD2 memberships."
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: raw_customers
+        description: "Wizards (customers)."
+        columns:
+          - name: customer_id
+            description: Primary key — wizard identifier (WIZ-00001).
+            data_tests: [unique, not_null]
+      - name: raw_guilds
+        description: "Arcane guilds (12 rows)."
+        columns:
+          - name: guild_id
+            description: Primary key — guild identifier (GLD-01).
+            data_tests: [unique, not_null]
+      - name: raw_guild_memberships
+        description: "SCD2 membership history — one row per customer-guild-tier interval."
+        columns:
+          - name: membership_id
+            description: Primary key — membership identifier (MEM-00001).
+            data_tests: [unique, not_null]
