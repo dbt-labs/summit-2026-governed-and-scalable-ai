@@ -1,13 +1,13 @@
 version: 2
 
-# Raw Grimoire CRM tables as dbt sources (loaded from seeds into
-# <target_schema>_raw). See _abra_pos__sources.yml for the seed/source note.
+# Raw Grimoire CRM tables as dbt sources loaded from shared seeds in
+# apothecaries.raw. See _abra_pos__sources.yml for the seed/source note.
 
 sources:
   - name: grimoire_crm
     description: "Grimoire CRM — customers (wizards), guilds, and SCD2 memberships."
-    database: "{{ target.database }}"
-    schema: "{{ target.schema }}_raw"
+    database: apothecaries
+    schema: raw
     tables:
       - name: raw_customers
         description: "Wizards (customers)."

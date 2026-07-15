@@ -9,7 +9,7 @@ other model.
 ## Project shape
 
 ```
-seeds/medium_data/   raw CSVs; `dbt seed` loads them into the <schema>_raw landing zone
+seeds/medium_data/   raw CSVs; `dbt seed` loads them into APOTHECARIES.RAW
 models/
   staging/<source>/  _<source>__sources.yml   — raw tables declared as SOURCES (+ raw tests)
                      stg_<source>__<entity>   — clean + type, reads one source(), 1:1
@@ -51,11 +51,11 @@ other tools/BI/AI should read, and the only layer exposed via the semantic layer
 
 The raw feed is intentionally messy so staging has real work (see
 [DATA_DICTIONARY.md](DATA_DICTIONARY.md#deliberate-data-quirks)). The handling is
-centralized in macros so the rule lives in one place:
+centralized where reuse pays off:
 
 | Quirk | Handled by |
 |---|---|
-| Two timestamp formats in every `*_at` | `parse_dual_timestamp()` |
+| Timestamp columns (`*_at`) | explicit `timestamp_ntz` casts in staging |
 | Messy booleans (`Y/N/yes/no/TRUE/FALSE`) | `to_boolean()` |
 | Copper integer prices | `copper_to_gold()` |
 | Inconsistent CRM region coding | `conform_region()` |

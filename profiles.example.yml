@@ -18,6 +18,6 @@ merlinco_apothecaries:
       authenticator: externalbrowser # SSO; or use private_key_path / password
       role: "TRANSFORMER"
       warehouse: "TRANSFORMING"
-      database: "MERLINCO"
-      schema: "dbt_dev" # your personal dev schema
+      database: "apothecaries"
+      schema: "alice_dev" # your personal dev schema; dbt will build into alice_dev/raw-style env-specific schemas per project config
       threads: 8

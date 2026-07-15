@@ -17,7 +17,7 @@ renamed as (
         {{ copper_to_gold('amount_copper') }} as amount_gold,
 
         -- timestamps
-        {{ parse_dual_timestamp('paid_at') }} as paid_at
+        paid_at::timestamp_ntz as paid_at
     from source
 )
 

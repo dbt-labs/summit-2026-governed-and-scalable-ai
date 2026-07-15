@@ -153,7 +153,7 @@ models:
   # FACTS
   # =========================================================================
   - name: fct_orders
-    description: Order-grain fact with revenue, payment behavior, and conformed FKs.
+    description: Order-grain fact with revenue, payment behavior, and conformed FKs. Order-grain semantic model over fct_orders.
     config:
       contract:
         enforced: true
@@ -162,6 +162,9 @@ models:
         data_type: varchar
         description: Primary key — order identifier.
         data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: order
       - name: customer_id
         data_type: varchar
         description: FK to dim_wizards.
@@ -170,6 +173,9 @@ models:
               arguments:
                 to: ref('dim_wizards')
                 field: customer_id
+        entity:
+          type: foreign
+          name: customer
       - name: shop_id
         data_type: varchar
         description: FK to dim_shops.
@@ -178,21 +184,30 @@ models:
               arguments:
                 to: ref('dim_shops')
                 field: shop_id
+        entity:
+          type: foreign
+          name: shop
       - name: fulfillment_region
         data_type: varchar
         description: Region of the fulfilling shop.
+        dimension:
+          type: categorical
       - name: order_status
         data_type: varchar
         data_tests:
           - accepted_values:
               arguments:
                 values: [completed, returned, cancelled, placed]
+        dimension:
+          type: categorical
       - name: channel
         data_type: varchar
         data_tests:
           - accepted_values:
               arguments:
                 values: [in_store, courier_owl, marketplace]
+        dimension:
+          type: categorical
       - name: line_item_count
         data_type: integer
       - name: total_quantity
@@ -218,8 +233,38 @@ models:
       - name: ordered_date
         data_type: date
 
+        dimension:
+          type: time
+        granularity: day
+    semantic_model:
+      enabled: true
+      name: fct_orders
+    agg_time_dimension: ordered_date
+    metrics:
+      - name: total_net_revenue
+        description: Net revenue across all orders, in gold crowns.
+        type: simple
+        label: Total net revenue (gold)
+        agg: sum
+        agg_time_dimension: ordered_date
+        expr: net_revenue_gold
+      - name: total_orders
+        description: Count of orders.
+        type: simple
+        label: Total orders
+        agg: count
+        agg_time_dimension: ordered_date
+        expr: order_id
+      - name: gross_revenue
+        description: Gross line revenue in gold crowns.
+        agg: sum
+        expr: gross_revenue_gold
+        agg_time_dimension: ordered_date
+
+        type: simple
+        hidden: true
   - name: fct_order_items
-    description: Line-grain fact — one row per potion per order.
+    description: Line-grain fact — one row per potion per order. Line-grain semantic model over fct_order_items.
     config:
       contract:
         enforced: true
@@ -228,6 +273,9 @@ models:
         data_type: varchar
         description: Primary key — line item identifier.
         data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: order_item
       - name: order_id
         data_type: varchar
         description: FK to fct_orders.
@@ -236,6 +284,9 @@ models:
               arguments:
                 to: ref('fct_orders')
                 field: order_id
+        entity:
+          type: foreign
+          name: order
       - name: potion_sku
         data_type: varchar
         description: FK to dim_potions.
@@ -244,6 +295,9 @@ models:
               arguments:
                 to: ref('dim_potions')
                 field: potion_sku
+        entity:
+          type: foreign
+          name: potion
       - name: customer_id
         data_type: varchar
         description: FK to dim_wizards (denormalized from order).
@@ -262,6 +316,28 @@ models:
       - name: ordered_date
         data_type: date
 
+        dimension:
+          type: time
+        granularity: day
+    semantic_model:
+      enabled: true
+      name: fct_order_items
+    agg_time_dimension: ordered_date
+    metrics:
+      - name: total_units_sold
+        description: Total potion units sold across all order lines.
+        type: simple
+        label: Total units sold
+        agg: sum
+        agg_time_dimension: ordered_date
+        expr: quantity
+      - name: line_revenue
+        description: Line revenue in gold crowns.
+        agg: sum
+        expr: line_revenue_gold
+        agg_time_dimension: ordered_date
+        type: simple
+        hidden: true
   - name: fct_payments
     description: Payment-attempt-grain fact — one row per payment attempt.
     config:

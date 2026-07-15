@@ -36,8 +36,9 @@ raw_brew_events ──► stg_alembic_ops__brew_events ────────�
 - **Staging** (add to `models/staging/alembic_ops/`, register in `_stg_alembic_ops.yml`):
   `stg_alembic_ops__suppliers`, `stg_alembic_ops__ingredients`,
   `stg_alembic_ops__potion_ingredients`, `stg_alembic_ops__brew_events`.
-  Use the shared macros — `to_boolean()` on `is_hazardous`, `parse_dual_timestamp()` on
-  `brewed_at`, `copper_to_gold()` on `unit_cost_copper`, `lower(trim())` on the mixed-case units.
+  Use the shared macros — `to_boolean()` on `is_hazardous`, `copper_to_gold()` on
+  `unit_cost_copper`, `lower(trim())` on the mixed-case units — and cast `brewed_at`
+  directly to `timestamp_ntz` in staging.
 - **Intermediate:** `int_potion_supply_cost` — roll each recipe up to a cost-to-brew per
   potion: `sum(potion_ingredients.quantity * ingredients.unit_cost)`. **Design decision to
   discuss:** how to handle unit mismatches between recipe and ingredient units.

@@ -1,7 +1,7 @@
 version: 2
 
-# Raw Alembic Ops tables as dbt sources (loaded from seeds into
-# <target_schema>_raw). See _abra_pos__sources.yml for the seed/source note.
+# Raw Alembic Ops tables as dbt sources loaded from shared seeds in
+# apothecaries.raw. See _abra_pos__sources.yml for the seed/source note.
 #
 # All five tables are declared here, including the four procurement tables
 # whose staging models are the hands-on lab (docs/LAB_procurement_slice.md).
@@ -10,8 +10,8 @@ version: 2
 sources:
   - name: alembic_ops
     description: "Alembic Ops — production & procurement (shops, suppliers, ingredients, recipes, brews)."
-    database: "{{ target.database }}"
-    schema: "{{ target.schema }}_raw"
+    database: apothecaries
+    schema: raw
     tables:
       - name: raw_shops
         description: "Shops (15 rows, 3 per region). region is the canonical spelling."

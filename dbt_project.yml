@@ -37,6 +37,7 @@ vars:
 # ---------------------------------------------------------------------------
 models:
   merlinco_apothecaries:
+    +database: apothecaries
     staging:
       +materialized: view
       +schema: staging
@@ -51,8 +52,10 @@ models:
     answer_key:
       +enabled: false
 
+
 seeds:
   merlinco_apothecaries:
+    +database: apothecaries
     +schema: raw
     # Load every raw column as text so the deliberate quirks (mixed case,
     # dual timestamp formats, messy booleans) survive intact — staging does

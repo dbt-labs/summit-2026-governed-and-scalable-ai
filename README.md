@@ -19,7 +19,7 @@ hands-on "plan → design → build with AI" lab. See
 ```bash
 dbt deps                     # install dbt_utils
 dbt parse                    # validate the project (no warehouse needed)
-dbt seed                     # load raw CSVs into the <schema>_raw landing zone (run once)
+dbt seed                     # load raw CSVs into APOTHECARIES.RAW (run once)
 dbt build                    # run + test all models against your Snowflake connection
 ```
 
@@ -41,8 +41,8 @@ models/
 │   └── <system>/     #   + _<system>__sources.yml (raw tables declared as dbt sources)
 ├── intermediate/     # int_ models — joins, fan-out, aggregation
 └── marts/            # dim_ / fct_ + enforced contracts, tests, and the semantic layer
-macros/               # shared cleaning macros (parse_dual_timestamp, to_boolean, …)
-seeds/medium_data/    # the 12 raw CSVs (3 source systems); `dbt seed` loads them
+macros/               # shared cleaning macros (to_boolean, copper_to_gold, conform_region, …)
+seeds/medium_data/    # the 12 raw CSVs (3 source systems); `dbt seed` loads them to APOTHECARIES.RAW
 ci/                   # dummy profile for warehouse-free CI (parse + lint)
 docs/
 ├── ERD.md                     # full schema diagram (columns, types, PK/FK markers)
@@ -95,9 +95,10 @@ Built out today (hero path) vs. left for the hands-on procurement lab:
 | dims | `dim_wizards`, `dim_potions`, `dim_shops`, `dim_dates` | `dim_suppliers` |
 | facts | `fct_orders`, `fct_order_items`, `fct_payments` | `fct_brews` |
 
-Staging normalizes the deliberate raw quirks via shared macros (`parse_dual_timestamp`,
-`to_boolean`, `copper_to_gold`, `conform_region` in [macros/](macros/)). Marts carry
-enforced contracts + tests, and a semantic layer defines the governed metrics.
+Staging normalizes the deliberate raw quirks via shared macros (`to_boolean`,
+`copper_to_gold`, `conform_region` in [macros/](macros/)) plus direct casts and
+lightweight cleanup in the staging models. Marts carry enforced contracts + tests,
+and a semantic layer defines the governed metrics.
 
 ## Built-in storylines
 

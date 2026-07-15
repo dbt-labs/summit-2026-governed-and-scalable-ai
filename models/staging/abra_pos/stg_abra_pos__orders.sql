@@ -18,7 +18,7 @@ renamed as (
         {{ copper_to_gold('discount_copper') }} as discount_gold,
 
         -- timestamps
-        {{ parse_dual_timestamp('ordered_at') }} as ordered_at
+        ordered_at::timestamp_ntz as ordered_at
     from source
 )
 

@@ -36,7 +36,6 @@ schema in [docs/ERD.md](docs/ERD.md) and [docs/DATA_DICTIONARY.md](docs/DATA_DIC
 
 The recurring raw-data quirks each have ONE macro. Never re-implement them inline:
 
-- `parse_dual_timestamp(col)` — every `*_at` raw column has two formats; parse with this.
 - `to_boolean(col)` — messy `Y/N/yes/no/TRUE/FALSE` → BOOLEAN.
 - `copper_to_gold(col)` — copper integer → gold NUMBER(38,2).
 - `conform_region(col)` — CRM region variants → canonical shop region.

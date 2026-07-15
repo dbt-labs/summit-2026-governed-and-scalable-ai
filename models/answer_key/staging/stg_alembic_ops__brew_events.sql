@@ -21,7 +21,7 @@ renamed as (
         brew_duration_minutes::int as brew_duration_minutes, -- ~1% null in raw
 
         -- timestamps
-        {{ parse_dual_timestamp('brewed_at') }} as brewed_at
+        brewed_at::timestamp_ntz as brewed_at
     from source
 )
 
