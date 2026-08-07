@@ -30,10 +30,18 @@ training_assets/
 │   │   │   │   ├── SKILL.md
 │   │   │   │   └── references/
 │   │   │   │       └── skill-design-checklist.md
-│   │   │   ├── building-governed-vertical-slices/
+│   │   │   ├── authoring-staging-models/
 │   │   │   │   ├── SKILL.md
 │   │   │   │   └── references/
-│   │   │   │       └── merlinco-modeling-checklist.md
+│   │   │   │       └── staging-model-checklist.md
+│   │   │   ├── authoring-intermediate-models/
+│   │   │   │   ├── SKILL.md
+│   │   │   │   └── references/
+│   │   │   │       └── grain-and-join-checklist.md
+│   │   │   ├── authoring-governed-marts/
+│   │   │   │   ├── SKILL.md
+│   │   │   │   └── references/
+│   │   │   │       └── mart-contract-and-test-checklist.md
 │   │   │   ├── authoring-governed-metrics/
 │   │   │   │   ├── SKILL.md
 │   │   │   │   └── references/
@@ -45,9 +53,11 @@ training_assets/
 │   │   │   └── investigating-dbt-job-failures/
 │   │   │       └── SKILL.md
 │   │   ├── workflows/
-│   │   │   └── governed-dbt-change.md
+│   │   │   ├── governed-dbt-change.md
+│   │   │   └── onboarding-source-system.md
 │   │   └── templates/
-│   │       └── dbt-change-plan.md
+│   │       ├── dbt-change-plan.md
+│   │       └── source-to-target-design.md
 │   ├── .github/
 │   │   ├── CODEOWNERS
 │   │   └── pull_request_template.md
@@ -62,6 +72,28 @@ training_assets/
 ```
 
 `models/answer_key/` remains separate. It is the disabled dbt answer key for the completed `alembic_ops` procurement models, contracts/tests, and Semantic Layer extension. It is not the home for non-dbt governance assets.
+
+## Source-system workflow architecture
+
+The source-system onboarding workflow composes reusable layer skills; it is not a source-specific implementation skill.
+
+```text
+Explore source system and established project patterns
+        ↓
+Approve source-to-target design and open business decisions
+        ↓
+Staging skill for each required raw table
+        ↓
+Intermediate skill when joins, aggregation, dedupe, fanout control, or grain change is required
+        ↓
+Mart skill for public dimensions/facts, contracts, tests, descriptions, and interface impact
+        ↓
+Semantic skill when a governed entity, dimension, measure, or metric changes
+        ↓
+Review and verification: build, lint, CI, and recorded evidence
+```
+
+A simple one-to-one dimension may project one staging model. A public mart that needs joins, aggregation, deduplication, fanout control, or grain changes must consume a named intermediate model rather than embedding that logic directly.
 
 ## Asset catalog and definition of done
 
@@ -78,15 +110,19 @@ training_assets/
 
 | Asset | Governance purpose | Final reference definition of done | Intended workshop state |
 |---|---|---|---|
-| `reference/.agents/ROUTING.md` | Makes instruction selection predictable by mapping request types to a workflow and relevant skill. | Covers model changes, semantic changes, model review, job failures, and skill authoring; says what always-on context applies; avoids conflicting routes; explains fallback when no specialized skill applies. | **Build net-new.** Learners create it after they understand the project and assets. |
+| `reference/.agents/ROUTING.md` | Makes instruction selection predictable by mapping request types to a workflow and relevant skill. | Covers source-system onboarding, layer-specific model work, semantic changes, model review, job failures, and skill authoring; says what always-on context applies; avoids conflicting routes; explains fallback when no specialized skill applies. | **Build net-new.** Learners create it after they understand the project and assets. |
 | `reference/.agents/skills/building-governed-skills/SKILL.md` | Standardizes how the team creates, scopes, tests, and maintains skills. | Defines a skill’s trigger, non-goals, required context, workflow, prompt-backs, references, validation, ownership, and retirement/review cadence; prevents redundant or overly broad skills. | **Ready then audit live.** Ship it as the shared point of entry so the class can use it to shape other skills. |
-| `reference/.agents/skills/building-governed-vertical-slices/SKILL.md` | Guides a source → staging → intermediate → mart implementation through discovery, planning, implementation, enforcement, and evidence. | Uses existing Merlin & Co. patterns; requires source/model/YAML inspection and data profiling before SQL; preserves layer rules; requires human sign-off on grain and business ambiguities; requires contracts/tests/docs/semantic impact review; specifies scoped build and SQLFluff validation. | **Build net-new.** This is the main development-governance asset used for Alembic. |
+| `reference/.agents/skills/authoring-staging-models/SKILL.md` | Builds source declarations and one-source, 1:1 staging models. | Requires source/YAML/data inspection, source tests, exact source column grounding, type/casing/null cleanup, shared macro reuse, and staging-level validation; prohibits joins, aggregation, and business logic. | **Build live.** Reused for every raw Alembic table. |
+| `reference/.agents/skills/authoring-intermediate-models/SKILL.md` | Handles joins, deduplication, fanout control, aggregation, and grain changes before public marts. | Requires stated grain, join cardinality, upstream column grounding, fanout/deduping strategy, intermediate tests/docs, and scoped validation; keeps public contract logic in marts. | **Build live.** Used for supply cost and as the project’s join-layer rule. |
+| `reference/.agents/skills/authoring-governed-marts/SKILL.md` | Builds public dimensions and facts. | Requires stated grain, direct single upstream input whenever possible, explicit casts, enforced contracts, tests, descriptions, compatibility review, semantic impact review, and scoped build/lint validation. | **Build live.** Used for `dim_suppliers` and `fct_brews`. |
 | `reference/.agents/skills/authoring-governed-metrics/SKILL.md` | Keeps metric changes tied to agreed business definitions and the Semantic Layer. | Requires definition, grain, aggregation, entities/dimensions, time semantics, source measures, consumer/downstream impact, conflict check, and validation; stops for an unresolved definition rather than creating a competing metric. | **Scaffold/refine.** Seed a minimal version, then complete the supply-cost/margin decision guidance during the final lab. |
 | `reference/.agents/skills/reviewing-governed-dbt-changes/SKILL.md` | Gives reviewers a consistent standard for AI-assisted dbt changes. | Checks grain, lineage, fanout, layer fit, contracts, types, tests, semantic impact, docs, performance/materialization, breaking changes, and verification evidence; separates must-fix defects from suggestions. | **Refine live.** Start with the basic rubric and add project-specific failure patterns from the flawed-change review. |
 | `reference/.agents/skills/investigating-dbt-job-failures/SKILL.md` | Standardizes safe, evidence-based job failure diagnosis. | Requires job/run context, failed-node/error evidence, affected code/config inspection, minimal safe remediation, validation/retry decision, and escalation boundaries; does not guess or mutate production without approval. | **Ready immediately.** The job-debug lab demonstrates using it, not authoring it. |
 | `reference/.agents/skills/*/references/*.md` | Holds detailed checklists and examples without making core skills long or generic. | Each reference is tied to one skill, current with final policies, contains no conflicting authority, and is linked from the owning `SKILL.md`; examples use project conventions. | **Reference only** at first; selectively expose where a lab benefits from it. |
-| `reference/.agents/workflows/governed-dbt-change.md` | Operationalizes Explore → Plan → Implement → Verify as the shared lifecycle. | Defines required inputs, expected artifact, human checkpoint, execution boundary, and evidence for each phase; points to the plan template and relevant skills; includes a stop/escalate path. | **Build net-new.** Learners create it after routing and before Alembic planning. |
-| `reference/.agents/templates/dbt-change-plan.md` | Captures the human-approved design before implementation. | Prompts for business outcome, sources/evidence inspected, grain, transformations/joins, assumptions, prompt-backs/decisions, contract/test/docs/semantic/downstream impact, acceptance criteria, validation selector/results, and follow-up. | **Build net-new.** Complete it for the Alembic change before writing models. |
+| `reference/.agents/workflows/governed-dbt-change.md` | Operationalizes Explore → Plan → Implement → Verify as the shared lifecycle. | Defines required inputs, expected artifact, human checkpoint, execution boundary, and evidence for each phase; points to the plan template and relevant skills; includes a stop/escalate path. | **Ready; explain.** |
+| `reference/.agents/workflows/onboarding-source-system.md` | Orchestrates staging → intermediate → marts → semantic as needed for a new source system. | Requires source-to-target design approval, invokes only necessary layer skills, records open decisions, and ends with review/verification evidence. | **Build live.** Used for Alembic planning. |
+| `reference/.agents/templates/dbt-change-plan.md` | Captures the human-approved design before a material change. | Prompts for business outcome, sources/evidence inspected, grain, transformations/joins, assumptions, prompt-backs/decisions, contract/test/docs/semantic/downstream impact, acceptance criteria, validation selector/results, and follow-up. | **Ready; use live.** |
+| `reference/.agents/templates/source-to-target-design.md` | Designs a new source system before implementation. | Maps source tables, keys, quirks, staging models, required intermediates and grain changes, marts, semantic definitions, open decisions, and validation plan. | **Build live.** Complete for Alembic before implementation. |
 
 ### Production enforcement, operations, and upkeep
 
@@ -120,7 +156,7 @@ The reference implementation is not done until these statements are true:
 3. **Evidence is required:** a material change records what was inspected, the human decisions made, validation performed, and any remaining uncertainty.
 4. **Enforcement is independent:** contracts, tests, lint, CI, and review can catch problems even if the agent or human author misses them.
 5. **Ownership is explicit:** every shared governance asset has an accountable reviewer and an update/review cadence.
-6. **Skills are task-oriented:** layer conventions stay in always-on context; skills encode conditional workflows and do not duplicate an entire project manual.
+6. **Skills are task-oriented:** layer conventions stay in always-on context; source-system onboarding composes layer skills only as needed.
 7. **The Semantic Layer remains authoritative:** AI-assisted analytics extends governed definitions rather than hand-rolling competing metrics.
 
 ## Reference acceptance test plan
@@ -129,7 +165,7 @@ Before deriving the workshop starter state, test the final assets against four s
 
 | Scenario | Assets exercised | Evidence of success |
 |---|---|---|
-| Build the `alembic_ops` procurement vertical | `AGENTS.md`, routing, vertical-slice skill, workflow, plan template, review skill, contracts/tests, CI expectations | Wizard inspects actual sources/docs, produces a plan, prompts back on units/nulls/margin definition, creates conforming models and YAML, and passes scoped build + SQLFluff after human decisions. |
+| Build the `alembic_ops` procurement vertical | `AGENTS.md`, routing, source-system workflow, source-to-target design, staging/intermediate/mart skills, review skill, contracts/tests, CI expectations | Wizard inspects actual sources/docs, produces a plan, prompts back on units/nulls/margin definition, creates conforming models and YAML, and passes scoped build + SQLFluff after human decisions. |
 | Add or change a governed metric | Metric skill, plan template, Semantic Layer YAML, review skill | Wizard identifies whether an existing metric already applies, obtains the business definition, produces a compatible semantic change, and validates it without creating a competing definition. |
 | Review a deliberately flawed AI-authored change | Review skill, reference rubric, PR template, contracts/tests | Reviewer identifies the intended grain and the concrete defects, distinguishes must-fix from suggestions, requests missing evidence, and verifies the corrected change. |
 | Diagnose a failed dbt job | Job-investigation skill, runbook, routing, platform run evidence | Wizard uses run-specific evidence, identifies the smallest safe next action, avoids unsupported claims, and stops for approval before a remediation/retry with production impact. |
@@ -148,8 +184,8 @@ After the acceptance tests pass, create `training_assets/starter/` and `training
 ## Next implementation order
 
 1. Create the `training_assets/reference/` tree and its top-level README.
-2. Build final `AGENTS.md`, `SECURITY.md`, routing, workflow, template, and skill-building skill.
-3. Build final vertical-slice, semantic, review, and job-investigation skills with their references.
+2. Build final `AGENTS.md`, `SECURITY.md`, routing, shared workflow/template, and skill-building skill.
+3. Use the skill-building skill to build source-system onboarding, staging, intermediate, mart, semantic, review, and job-investigation assets with focused references.
 4. Build final CODEOWNERS, PR template, job runbook, and governance scorecard.
 5. Run the four acceptance scenarios and revise until the assets work together.
 6. Derive the starter/refine/net-new workshop state.

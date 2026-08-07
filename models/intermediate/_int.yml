@@ -3,8 +3,8 @@ version: 2
 models:
   - name: int_orders_with_payments
     description: >
-      Order grain enriched with line-item totals and rolled-up payment
-      behavior (net revenue, amount paid, split/failed/refund flags).
+      Order grain enriched with line-item totals, rolled-up payment behavior,
+      and fulfillment region (net revenue, amount paid, split/failed/refund flags).
     columns:
       - name: order_id
         description: Primary key — order identifier.
@@ -27,3 +27,30 @@ models:
           - accepted_values:
               arguments:
                 values: [apprentice, adept, archmage]
+
+  - name: int_customers_with_current_membership
+    description: >
+      Customer grain enriched with current guild membership, retaining customers
+      without an active membership.
+    columns:
+      - name: customer_id
+        description: Primary key — customer identifier.
+        data_tests: [unique, not_null]
+
+  - name: int_order_items_with_order_context
+    description: >
+      Order-item grain enriched with parent-order customer, shop, and timestamp
+      context for the order-item fact.
+    columns:
+      - name: order_item_id
+        description: Primary key — order-item identifier.
+        data_tests: [unique, not_null]
+
+  - name: int_payments_with_order_context
+    description: >
+      Payment-attempt grain enriched with parent-order customer context, retaining
+      split payments, failures, and refunds as separate rows.
+    columns:
+      - name: payment_id
+        description: Primary key — payment-attempt identifier.
+        data_tests: [unique, not_null]
