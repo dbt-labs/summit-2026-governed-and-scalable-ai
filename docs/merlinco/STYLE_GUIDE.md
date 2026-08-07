@@ -1,6 +1,6 @@
 # Modeling style guide
 
-The human-readable companion to [CLAUDE.md](../CLAUDE.md). Same rules, with the
+The human-readable companion to [AGENTS.md](../../AGENTS.md). Same rules, with the
 *why* — so both people and AI assistants produce the same code, and reviewers have
 a shared standard to point at. Consistency is what lets this project scale: a
 reviewer (or a contract test) can trust a new model because it looks like every
