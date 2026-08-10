@@ -1,4 +1,5 @@
--- Order grain enriched with payment behavior. One row per order.
+-- Order grain enriched with line-item totals, rolled-up payment behavior, and
+-- fulfillment region. One row per order.
 --
 -- Payments arrive at attempt grain (splits, failures, refunds each get a
 -- row), so we roll them up: successful amount paid, plus flags for the
@@ -14,6 +15,10 @@ order_items as (
 
 payments as (
     select * from {{ ref('stg_abra_pos__payments') }}
+),
+
+shops as (
+    select * from {{ ref('stg_alembic_ops__shops') }}
 ),
 
 item_totals as (
@@ -48,6 +53,7 @@ final as (
         orders.shop_id,
 
         -- attributes
+        shops.region as fulfillment_region,
         orders.order_status,
         orders.channel,
 
@@ -70,6 +76,7 @@ final as (
     from orders
     left join item_totals on orders.order_id = item_totals.order_id
     left join payment_rollup on orders.order_id = payment_rollup.order_id
+    left join shops on orders.shop_id = shops.shop_id
 )
 
 select * from final

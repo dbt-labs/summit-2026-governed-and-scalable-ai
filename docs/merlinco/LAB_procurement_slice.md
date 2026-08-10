@@ -1,8 +1,8 @@
 # Hands-on lab: build the procurement / supply-cost slice with AI
 
 This is the one `source → mart` vertical left **unbuilt** on purpose. In the session
-we plan, design, and build it **with an AI assistant** — and watch the project's
-guardrails (conventions in [CLAUDE.md](../CLAUDE.md), contracts, tests, CI, the
+we plan, design, and build it **with dbt Wizard** — and watch the project's
+guardrails (conventions in [AGENTS.md](../../AGENTS.md), contracts, tests, CI, the
 semantic layer) keep the AI's output trustworthy without us hand-reviewing every line.
 That is the thesis of "Governed & Scalable AI-assisted Analytics with dbt" in one exercise.
 
@@ -59,6 +59,6 @@ raw_brew_events ──► stg_alembic_ops__brew_events ────────�
 
 ## Talking points during the build
 
-- Point the AI at `CLAUDE.md` first — watch it produce conforming code because the rules are written down.
+- Start with `AGENTS.md` and the task workflow—watch Wizard produce conforming code because the rules and decision checkpoints are written down.
 - Break a contract on purpose (change a type) and show the build failing loudly.
 - Contrast: "one analyst writing this once" vs. "a pattern any teammate or agent can repeat safely."

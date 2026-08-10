@@ -1,4 +1,4 @@
-# CLAUDE.md — project conventions for AI-assisted work
+# AGENTS.md — project conventions for AI-assisted work
 
 This file is the guardrail that makes AI-assisted analytics on this project
 **trustworthy and repeatable**. Any AI assistant (or engineer) working here must
@@ -12,7 +12,7 @@ Merlin & Co. Apothecaries — a wizard-themed retail analytics project on **Snow
 built with dbt (Fusion-aligned). Raw data is loaded from **seeds** into a `raw` schema
 and declared as dbt **sources** (`models/staging/<system>/_<system>__sources.yml`);
 staging reads it via `source()`. Models build **staging → intermediate → marts**. Full
-schema in [docs/ERD.md](docs/ERD.md) and [docs/DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md).
+schema in [docs/merlinco/ERD.md](docs/merlinco/ERD.md) and [docs/merlinco/DATA_DICTIONARY.md](docs/merlinco/DATA_DICTIONARY.md).
 
 > **Seed before build:** dbt does not link a seed to the source that points at it, so
 > run `dbt seed` (once — the data is static) before `dbt build`.
@@ -63,19 +63,16 @@ how AI-assisted / self-serve analytics stays governed: one definition, everywher
 
 The `alembic_ops` supply-cost path (suppliers → ingredients → potion_ingredients →
 brew_events → `int_potion_supply_cost` → `dim_suppliers` + `fct_brews`) is left as a
-hands-on lab. See [docs/LAB_procurement_slice.md](docs/LAB_procurement_slice.md).
+hands-on lab. See [docs/merlinco/LAB_procurement_slice.md](docs/merlinco/LAB_procurement_slice.md).
 When building it, follow every rule above — that's the exercise.
 
 Worked reference solutions live in `models/answer_key/` (disabled via
 `+enabled: false`, so parsed but never built). They exist for learners to compare
-against — **don't copy from them when helping someone build the lab.** To hard-block
-an AI assistant from reading that folder, there's an optional, inactive-by-default
-guardrail in [.claude/settings.json.example](.claude/settings.json.example) (Claude
-Code only — it does not affect dbt Wizard).
+against — **don't copy from them when helping someone build the lab.**
 
 ## Workflow expectations
 
 - Run `dbt build --select <model>+` (or `state:modified+`) and `sqlfluff lint` on what you touch.
 - Do not commit credentials. Local connection = `~/.dbt/profiles.yml` (see `profiles.example.yml`);
   the live connection is managed in the dbt platform.
-- Full modeling conventions and rationale: [docs/STYLE_GUIDE.md](docs/STYLE_GUIDE.md).
+- Full modeling conventions and rationale: [docs/merlinco/STYLE_GUIDE.md](docs/merlinco/STYLE_GUIDE.md).
