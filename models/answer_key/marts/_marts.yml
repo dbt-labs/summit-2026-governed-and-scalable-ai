@@ -1,11 +1,11 @@
 version: 2
 
-# [answer key — disabled] Marts for the procurement lab. Contracts are declared
+# [answer key — disabled] Expected marts for the procurement lab. Contracts are declared
 # for fidelity; they are not enforced while the folder is disabled (not built).
 
 models:
-  - name: dim_suppliers
-    description: "[answer key] Supplier dimension with supplied-ingredient count."
+  - name: dim_suppliers__expected
+    description: Supplier dimension — one row per ingredient supplier.
     config:
       contract:
         enforced: true
@@ -16,21 +16,31 @@ models:
         data_tests: [unique, not_null]
       - name: supplier_name
         data_type: varchar
+        description: Supplier display name.
+        data_tests: [not_null]
       - name: region
         data_type: varchar
+        description: Supplier region.
         data_tests:
+          - not_null
           - accepted_values:
               arguments:
                 values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
       - name: reliability_rating
         data_type: integer
-      - name: supplied_ingredient_count
-        data_type: integer
+        description: Supplier reliability rating from 1 through 5.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
       - name: contracted_since
         data_type: date
+        description: Date the supplier contract began.
 
-  - name: fct_brews
-    description: "[answer key] Brew-batch-grain fact with estimated batch supply cost."
+  - name: fct_brews__expected
+    description: >
+      Brew-batch-grain fact with estimated standard potion and batch supply cost.
+      Source-null brew duration is intentionally preserved.
     config:
       contract:
         enforced: true
@@ -43,6 +53,7 @@ models:
         data_type: varchar
         description: FK to dim_potions.
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_potions')
@@ -51,31 +62,57 @@ models:
         data_type: varchar
         description: FK to dim_shops.
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_shops')
                 field: shop_id
-      - name: brew_region
-        data_type: varchar
       - name: cauldron_id
         data_type: varchar
+        description: Production cauldron identifier; no modeled cauldron dimension exists.
+        data_tests: [not_null]
       - name: quality_check
         data_type: varchar
+        description: Batch quality result, lowercased.
         data_tests:
           - accepted_values:
               arguments:
                 values: [pass, fail]
       - name: passed_quality_check
         data_type: boolean
+        description: Whether the batch passed its quality check.
+        data_tests: [not_null]
       - name: brewer_name
         data_type: varchar
+        description: Recorded brewer name.
+        data_tests: [not_null]
       - name: batch_size
         data_type: integer
+        description: Number of potion units produced in the batch.
+        data_tests: [not_null]
       - name: brew_duration_minutes
         data_type: integer
+        description: Observed brewing duration in minutes; nullable when absent in the source.
+      - name: potion_supply_cost_copper
+        data_type: integer
+        description: Estimated standard supply cost to brew one potion, in copper pieces.
+        data_tests: [not_null]
+      - name: potion_supply_cost_gold
+        data_type: number(38, 2)
+        description: Estimated standard supply cost to brew one potion, in gold crowns.
+        data_tests: [not_null]
+      - name: batch_supply_cost_copper
+        data_type: integer
+        description: Estimated standard supply cost for the full batch, in copper pieces.
+        data_tests: [not_null]
       - name: batch_supply_cost_gold
         data_type: number(38, 2)
+        description: Estimated standard supply cost for the full batch, in gold crowns.
+        data_tests: [not_null]
       - name: brewed_at
         data_type: timestamp_ntz
+        description: Brew event timestamp.
+        data_tests: [not_null]
       - name: brewed_date
         data_type: date
+        description: Calendar date of the brew event.
