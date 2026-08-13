@@ -1,11 +1,36 @@
 version: 2
 
-# [answer key — disabled] Intermediate model for the procurement lab.
-
+# [answer key — disabled] Expected intermediate models for the procurement lab.
 models:
-  - name: int_potion_supply_cost
-    description: "[answer key] Cost to brew one unit of each potion (see model header for the unit assumption)."
+  - name: int_potion_supply_cost__expected
+    description: >
+      One row per potion SKU with estimated standard potion supply cost, rolled
+      up from supplied recipe quantities and current modeled ingredient costs.
     columns:
       - name: potion_sku
-        description: Primary key — one row per potion with a recipe.
+        description: Primary key — potion SKU with a modeled recipe.
         data_tests: [unique, not_null]
+      - name: ingredient_count
+        description: Number of recipe components contributing to the potion cost.
+        data_tests: [not_null]
+      - name: potion_supply_cost_gold
+        description: Estimated standard supply cost to brew one potion, in gold crowns.
+        data_tests: [not_null]
+
+  - name: int_brews_with_supply_cost__expected
+    description: >
+      One row per brew batch enriched with estimated standard potion and batch
+      supply cost, preserving source-null brew duration.
+    columns:
+      - name: brew_id
+        description: Primary key — brew identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to the brewed potion.
+        data_tests: [not_null]
+      - name: shop_id
+        description: FK to the shop hosting the batch.
+        data_tests: [not_null]
+      - name: batch_supply_cost_gold
+        description: Estimated standard batch supply cost in gold crowns.
+        data_tests: [not_null]

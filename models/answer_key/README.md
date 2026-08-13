@@ -1,7 +1,7 @@
 # answer_key/ — expected reference solutions (disabled)
 
 Complete, governed implementations of the procurement / supply-cost slice that the
-hands-on lab asks you to build (see [../../docs/LAB_procurement_slice.md](../../docs/LAB_procurement_slice.md)).
+hands-on lab asks you to build.
 They're here so you can **compare your own work** against a worked reference.
 
 ## Layout
