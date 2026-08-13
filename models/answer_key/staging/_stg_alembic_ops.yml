@@ -1,65 +1,126 @@
 version: 2
 
-# [answer key — disabled] Staging models for the procurement lab.
-
 models:
-  - name: stg_alembic_ops__suppliers
-    description: "[answer key] One row per supplier."
+  - name: stg_alembic_ops__suppliers__expected
+    description: One row per ingredient supplier from Alembic Ops procurement.
     columns:
       - name: supplier_id
-        description: Primary key — supplier identifier.
+        description: Primary key — supplier identifier (SUP-01).
         data_tests: [unique, not_null]
+      - name: supplier_name
+        description: Supplier display name.
+        data_tests: [not_null]
+      - name: region
+        description: Supplier region.
+        data_tests: [not_null]
+      - name: reliability_rating
+        description: Supplier reliability rating from 1 through 5.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: contracted_since
+        description: Date the supplier contract began.
 
-  - name: stg_alembic_ops__ingredients
-    description: "[answer key] One row per ingredient; unit lowercased, messy is_hazardous normalized, cost in gold."
+  - name: stg_alembic_ops__ingredients__expected
+    description: >
+      One row per ingredient. Unit is lowercased, messy hazardous encodings are
+      normalized to boolean, and copper unit cost is exposed in gold crowns.
     columns:
       - name: ingredient_id
-        description: Primary key — ingredient identifier.
+        description: Primary key — ingredient identifier (ING-001).
         data_tests: [unique, not_null]
       - name: supplier_id
-        description: FK to the supplying supplier.
+        description: FK to the ingredient supplier.
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('stg_alembic_ops__suppliers')
                 field: supplier_id
       - name: unit
-        description: Purchase unit, lowercased.
+        description: Ingredient unit, lowercased.
         data_tests:
           - accepted_values:
               arguments:
-                values: [gram, sprig, vial, pinch, dram, bundle]
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: is_hazardous
+        description: Whether the ingredient is hazardous after boolean normalization.
+        data_tests: [not_null]
+      - name: unit_cost_gold
+        description: Standard ingredient unit cost in gold crowns.
+        data_tests: [not_null]
 
-  - name: stg_alembic_ops__potion_ingredients
-    description: "[answer key] Recipe bridge; hashed recipe_id over the composite natural key."
+  - name: stg_alembic_ops__potion_ingredients__expected
+    description: >
+      One row per potion-ingredient recipe component. The composite natural key
+      is potion SKU and ingredient ID; unit is lowercased.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
     columns:
-      - name: recipe_id
-        description: Surrogate key — hash of (potion_sku, ingredient_id).
-        data_tests: [unique, not_null]
       - name: potion_sku
-        description: FK to the potion.
+        description: Part of the composite natural key; FK to the potion catalog.
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('stg_abra_pos__potions')
                 field: potion_sku
       - name: ingredient_id
-        description: FK to the ingredient.
+        description: Part of the composite natural key; FK to the ingredient.
         data_tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('stg_alembic_ops__ingredients')
                 field: ingredient_id
+      - name: quantity
+        description: Recipe quantity measured in the supplied recipe unit.
+        data_tests: [not_null]
+      - name: unit
+        description: Recipe component unit, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
 
-  - name: stg_alembic_ops__brew_events
-    description: "[answer key] One row per brew batch; brewed_at parsed, quality_check lowercased."
+  - name: stg_alembic_ops__brew_events__expected
+    description: >
+      One row per production brew batch. Quality check is lowercased and the
+      source-null brew duration is intentionally preserved.
     columns:
       - name: brew_id
-        description: Primary key — brew identifier.
+        description: Primary key — brew identifier (BRW-00001).
         data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to the brewed potion.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: shop_id
+        description: FK to the shop hosting the batch.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops')
+                field: shop_id
+      - name: batch_size
+        description: Number of potion units produced in the batch.
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        description: Observed brewing duration in minutes; nullable when absent in the source.
       - name: quality_check
-        description: Quality-check result, lowercased.
+        description: Batch quality result, lowercased.
         data_tests:
           - accepted_values:
               arguments:
                 values: [pass, fail]
+      - name: brewed_at
+        description: Brew event timestamp parsed to TIMESTAMP_NTZ.
+        data_tests: [not_null]

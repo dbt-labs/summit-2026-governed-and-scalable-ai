@@ -1,24 +1,20 @@
--- ANSWER KEY (disabled). Reference solution for the procurement lab; not built.
-
 with source as (
     select * from {{ source('alembic_ops', 'raw_brew_events') }}
 ),
 
 renamed as (
     select
-        -- ids
+        -- ids / foreign keys
         brew_id,
         potion_sku,
         shop_id,
         cauldron_id,
 
-        -- attributes
+        -- batch attributes
+        batch_size::integer as batch_size,
+        brew_duration_minutes::integer as brew_duration_minutes,
         lower(trim(quality_check)) as quality_check,
         brewer_name,
-
-        -- measures
-        batch_size::int as batch_size,
-        brew_duration_minutes::int as brew_duration_minutes, -- ~1% null in raw
 
         -- timestamps
         brewed_at::timestamp_ntz as brewed_at

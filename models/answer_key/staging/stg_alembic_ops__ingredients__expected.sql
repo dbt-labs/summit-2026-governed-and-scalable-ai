@@ -1,5 +1,3 @@
--- ANSWER KEY (disabled). Reference solution for the procurement lab; not built.
-
 with source as (
     select * from {{ source('alembic_ops', 'raw_ingredients') }}
 ),
@@ -13,11 +11,11 @@ renamed as (
         -- attributes
         ingredient_name,
         lower(trim(unit)) as unit,
-        lower(trim(harvest_season)) as harvest_season,
         {{ to_boolean('is_hazardous') }} as is_hazardous,
+        harvest_season,
 
         -- money
-        unit_cost_copper::int as unit_cost_copper,
+        unit_cost_copper::integer as unit_cost_copper,
         {{ copper_to_gold('unit_cost_copper') }} as unit_cost_gold
     from source
 )
