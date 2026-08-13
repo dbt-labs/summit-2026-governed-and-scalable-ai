@@ -120,7 +120,9 @@ models:
         description: Current-membership start date (nullable).
 
   - name: dim_dates
-    description: Date dimension spanning the activity window.
+    description: Date dimension spanning the activity window and registered as the daily MetricFlow time spine.
+    time_spine:
+      standard_granularity_column: date_day
     config:
       contract:
         enforced: true
@@ -129,6 +131,8 @@ models:
         data_type: date
         description: Primary key — calendar day.
         data_tests: [unique, not_null]
+        granularity: day
+
       - name: date_key
         data_type: integer
         description: Integer surrogate key (YYYYMMDD).
@@ -164,7 +168,8 @@ models:
         data_tests: [unique, not_null]
         entity:
           type: primary
-          name: order
+          name: order_id
+
       - name: customer_id
         data_type: varchar
         description: FK to dim_wizards.
@@ -286,7 +291,8 @@ models:
                 field: order_id
         entity:
           type: foreign
-          name: order
+          name: order_id
+
       - name: potion_sku
         data_type: varchar
         description: FK to dim_potions.
