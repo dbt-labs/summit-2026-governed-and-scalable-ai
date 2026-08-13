@@ -27,7 +27,8 @@ clean-targets:
 # ---------------------------------------------------------------------------
 vars:
   date_spine_start: "2023-01-01" # earliest customer signup precedes first order
-  date_spine_end: "2026-12-31"
+  date_spine_end: "2027-01-01"
+
 
 # ---------------------------------------------------------------------------
 # Materialization + layering conventions (enforced project-wide)
