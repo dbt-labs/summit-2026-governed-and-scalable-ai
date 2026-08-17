@@ -1,11 +1,14 @@
 version: 2
 
-# Raw Alembic Ops tables as dbt sources loaded from shared seeds in
-# apothecaries.raw. See _abra_pos__sources.yml for the seed/source note.
+# Raw Alembic Ops tables as dbt sources over pre-built workshop relations in
+# apothecaries.raw. Committed seeds are portability fixtures for facilitator or
+# environment setup, not a trainee prerequisite.
 #
 # All five tables are declared here, including the four procurement tables
-# whose staging models are the hands-on lab (docs/LAB_procurement_slice.md).
-# The lab builds stg models on top of these existing source declarations.
+# whose staging models are the hands-on lab
+# (docs/merlinco/LAB_procurement_slice.md). The lab builds staging models on top
+# of these existing source declarations.
+
 
 sources:
   - name: alembic_ops

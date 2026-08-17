@@ -9,7 +9,7 @@ other model.
 ## Project shape
 
 ```
-seeds/medium_data/   raw CSVs; `dbt seed` loads them into APOTHECARIES.RAW
+seeds/medium_data/   portable raw CSV fixtures for facilitator/environment setup
 models/
   staging/<source>/  _<source>__sources.yml   — raw tables declared as SOURCES (+ raw tests)
                      stg_<source>__<entity>   — clean + type, reads one source(), 1:1
@@ -18,11 +18,12 @@ models/
 macros/              shared cleaning logic (the reuse layer)
 ```
 
-**Seeds vs. sources.** Seeds keep the project self-contained (any Snowflake account, no
-external EL). But staging reads through `source()`, not `ref()` on the seed, because
-`source()` is the real-world pattern and gives us a source contract, source-level tests,
-and freshness. dbt does not create a lineage edge from a seed to the source pointing at
-it, so **run `dbt seed` before `dbt build`** (the data is static, so this is rare).
+**Seeds vs. sources.** Workshop raw relations are pre-built, so trainees work through
+`source()` and do not need to load seeds. The committed seeds keep the project
+self-contained for facilitators provisioning another Snowflake account or reusing the
+project in another training. Staging still reads through `source()`, not `ref()` on a
+seed, because that reflects the production pattern and supports source-level metadata
+and tests.
 
 ## Layering, in detail
 

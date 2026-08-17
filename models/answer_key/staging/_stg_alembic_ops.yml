@@ -36,7 +36,8 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('stg_alembic_ops__suppliers')
+                to: ref('stg_alembic_ops__suppliers__expected')
+
                 field: supplier_id
       - name: unit
         description: Ingredient unit, lowercased.
@@ -74,7 +75,8 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('stg_alembic_ops__ingredients')
+                to: ref('stg_alembic_ops__ingredients__expected')
+
                 field: ingredient_id
       - name: quantity
         description: Recipe quantity measured in the supplied recipe unit.

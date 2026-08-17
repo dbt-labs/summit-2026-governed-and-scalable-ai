@@ -6,7 +6,8 @@ This file is always-on context for people and AI assistants working in this dbt 
 
 ## Project context and authoritative sources
 
-Merlin & Co. Apothecaries is a Snowflake dbt project with raw seed data modeled through **staging → intermediate → marts**. The completed `abra_pos` and `grimoire_crm` slices are the implementation patterns. The `alembic_ops` procurement/supply-cost slice is the intentional hands-on build.
+Merlin & Co. Apothecaries is a Snowflake dbt project with pre-built workshop source relations modeled through **staging → intermediate → marts**. The completed `abra_pos` and `grimoire_crm` slices are the implementation patterns. The `alembic_ops` procurement/supply-cost slice is the intentional hands-on build.
+
 
 Read the appropriate source of truth before proposing or editing a material change:
 
@@ -19,7 +20,6 @@ Read the appropriate source of truth before proposing or editing a material chan
 - Human decision and evidence record: `.agents/templates/dbt-change-plan.md`
 - Sensitive-data and action boundaries: `SECURITY.md`
 
-Seeds load the raw landing zone, while staging reads through `source()`. Run `dbt seed` before the first warehouse-backed build when the raw seed relations do not already exist.
 
 ## Layer rules
 

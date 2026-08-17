@@ -33,7 +33,8 @@ Treat this set as a starter scaffold. Teams should adopt the smallest useful ver
 | Warehouse-backed verification | dbt Platform CI | Builds affected nodes and runs warehouse-backed tests before promotion. | dbt Platform job configuration | Demo/pre-record |
 | Governed consumption | Semantic models and metrics | Defines the business numbers and dimensions that analytics consumers and AI should use. | `models/marts/_semantic_models.yml`; `models/marts/metrics.yml` | Extend in final lab |
 | Runtime action boundary | RBAC and approval mode | Controls who can use Wizard, edit files, approve actions, deploy, or diagnose jobs. | dbt Platform account/project settings | Discuss/demo |
-| Operational recovery | Job-troubleshooting skill/runbook | Standardizes how Wizard investigates a failed run and when it stops for a human. | `.agents/skills/`; `docs/runbooks/` | Job-debug lab |
+| Operational recovery | Job-troubleshooting skill/runbook | Standardizes how Wizard investigates a failed run and when it stops for a human. | `.agents/skills/investigating-dbt-job-failures/` | Job-debug lab |
+
 | Measurement and upkeep | Governance scorecard + review cadence | Tracks validation rate, reviewer findings, failure patterns, skill reuse, stale assets, and improvement actions. | `docs/` or team operating repository | Discuss |
 | Cross-project scaling | Native package-skill distribution | Shares standardized skills across dbt projects once supported as a first-class capability. | dbt Platform / package distribution | Mention as upcoming |
 | Beyond-platform extension | MCP tool policy | Defines which external tools may access governed metrics versus raw SQL, with least-privilege access and evidence expectations. | External MCP configuration plus repository policy | Mention only; point to MCP training |

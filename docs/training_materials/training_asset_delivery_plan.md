@@ -51,7 +51,9 @@ training_assets/
 │   │   │   │   └── references/
 │   │   │   │       └── review-rubric.md
 │   │   │   └── investigating-dbt-job-failures/
-│   │   │       └── SKILL.md
+│   │   │       ├── SKILL.md
+│   │   │       └── references/
+│   │   │           └── dbt-job-investigation.md
 │   │   ├── workflows/
 │   │   │   ├── governed-dbt-change.md
 │   │   │   └── onboarding-source-system.md
@@ -62,9 +64,8 @@ training_assets/
 │   │   ├── CODEOWNERS
 │   │   └── pull_request_template.md
 │   └── docs/
-│       ├── governance_scorecard.md
-│       └── runbooks/
-│           └── dbt-job-investigation.md
+│       └── governance_scorecard.md
+
 ├── starter/                         # created after the reference state is proven
 │   └── README.md
 └── lab_guides/                      # created after the starter state is designed
@@ -133,7 +134,8 @@ A simple one-to-one dimension may project one staging model. A public mart that 
 | dbt Platform CI job | Verifies warehouse-backed behavior before promotion. | Configured to run appropriate CI selector/build, surfaces artifacts/errors, has correct environment/deferral/access settings, and is tested with a known PR. | **Demo/pre-record.** Platform configuration is not a source-controlled workshop build. |
 | Semantic models and metrics | Defines the canonical business definitions available to governed analytics and AI consumption. | Existing metrics remain valid; Alembic supply-cost measures and margin metric have explicit agreed definitions, correct grain, tests/contracts supporting them, and validated results. | **Extend in final lab** after the class makes the business decisions. |
 | RBAC and approval mode | Controls who can use Wizard, make edits, approve actions, deploy, or diagnose. | Documented role/action matrix exists in platform administration; approval boundaries align with risk; training account setup is verified. | **Discuss/demo.** Do not create a pretend RBAC policy in repo source. |
-| `reference/docs/runbooks/dbt-job-investigation.md` | Provides a human-readable operational playbook parallel to the job skill. | Includes triage sequence, evidence to collect, severity/escalation guidance, safe remediation/retry steps, and post-incident follow-up; agrees with the job-investigation skill. | **Reference/supporting asset.** Use during the job lab if helpful. |
+| `reference/.agents/skills/investigating-dbt-job-failures/references/dbt-job-investigation.md` | Bundles the detailed operational playbook with its owning job-investigation skill. | Includes triage sequence, evidence to collect, severity/escalation guidance, safe remediation/retry steps, and post-incident follow-up; agrees with the owning skill. | **Reference/supporting asset.** Use during the job lab if helpful. |
+
 | `reference/docs/governance_scorecard.md` | Makes ongoing governance measurable and maintained. | Defines owners, review cadence, indicator definitions, evidence source, and action when a metric regresses; starter indicators cover validation rate, reviewer findings, AI-assisted PR evidence, skill reuse, stale assets, and incident learnings. | **Discuss/take-home.** Do not spend live time designing the measurement program. |
 
 ### Explicitly outside the reference repo implementation

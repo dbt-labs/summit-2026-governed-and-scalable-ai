@@ -1,12 +1,10 @@
 version: 2
 
-# The raw Abracadabra POS tables as dbt SOURCES. Physically these are the
-# seeds in apothecaries.raw; declaring them as sources lets staging read them
-# via source() — the real-world pattern — and gives us a source contract +
-# source-level tests + a `source:` selector.
-#
-# NOTE: seeds and sources have no automatic lineage edge, so run `dbt seed`
-# before `dbt build` (seeds are static, so this is a one-time / rare step).
+# The raw Abracadabra POS tables as dbt SOURCES. Workshop raw relations are
+# pre-built in apothecaries.raw; declaring them as sources lets staging read them
+# via source() and provides source metadata, source-level tests, and a `source:`
+# selector. Committed seeds are portability fixtures for facilitator/environment
+# setup, not a trainee workshop prerequisite.
 
 sources:
   - name: abra_pos
