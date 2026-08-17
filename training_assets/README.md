@@ -5,8 +5,9 @@ This directory contains the reusable governance assets for the dbt Summit traini
 ## Directory roles
 
 - `reference/` is the complete, tested final-state answer key for repository governance assets. It is intentionally comprehensive, including a final `AGENTS.md`, even where the active workshop project later contains a simplified or incomplete version.
-- `starter/` will hold the learner starting state after the reference assets have passed their acceptance scenarios.
-- `lab_guides/` will hold facilitator and participant materials once the starter-state gaps and expected outputs are fixed.
+- `trainee_starter_manifest.md` defines the learner starting state: which assets are ready, which are sparse with visible `TODO(training)` gaps, and which are intentionally absent. The starting state itself lives in the active repository root, not in a separate directory.
+- `demo_outlines/` holds the facilitator run-of-show for each demo — objectives, timing, repository state, exact Wizard prompts, decision checkpoints, and validation evidence.
+- `ppt_edits.md` is the change queue for the slide deck and the map of where each demo slots into it.
 
 The dbt model answer key is separate: `models/answer_key/` contains the disabled final implementation of the `alembic_ops` procurement slice. Keep non-dbt governance assets out of that directory.
 
@@ -21,5 +22,3 @@ Treat `reference/` as a coherent overlay for a governed dbt project:
 5. Record decisions and validation evidence in the PR process; rely on dbt contracts, tests, lint, and CI as independent enforcement.
 
 The reference tree is a training template, not a substitute for an organization’s security, identity, retention, or access-control policies. Adapt its placeholders and escalation paths to the owning organization.
-
-See `docs/training_materials/training_asset_delivery_plan.md` for the asset catalog, acceptance criteria, and workshop sequencing.

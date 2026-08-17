@@ -26,6 +26,8 @@ target/
 dbt_packages/
 logs/
 .dbt/
-# never commit real credentials
-profiles.yml
+# never commit real credentials (anchored: the credential-free ci/profiles.yml is tracked)
+/profiles.yml
+# dbt anonymous-usage id, written into whichever profiles dir dbt runs against
+.user.yml
 dbt_internal_packages/
