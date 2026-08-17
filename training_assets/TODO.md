@@ -13,7 +13,8 @@ references/review-rubric.md
 Job investigation
 
 .agents/skills/investigating-dbt-job-failures/SKILL.md
-docs/runbooks/dbt-job-investigation.md
+.agents/skills/investigating-dbt-job-failures/references/dbt-job-investigation.md
+
 Review traceability and ownership
 
 .github/pull_request_template.md
@@ -144,7 +145,8 @@ CODEOWNERS is the repository mechanism that asks the right people to review sens
 /AGENTS.md, /SECURITY.md, and /.agents/ → @example-org/analytics-governance
 /models/marts/ and semantic definitions → @example-org/analytics-engineering
 /.github/workflows/ → @example-org/data-platform
-/.github/pull_request_template.md and /docs/runbooks/ → appropriate governance/platform placeholders
+/.github/pull_request_template.md and /.agents/skills/investigating-dbt-job-failures/ → appropriate governance/platform placeholders
+
 The point of the demo is:
 
 The people who own business definitions, deployment risk, and project policy should be asked to review their changes. AI can draft the change; it cannot assume that accountability.

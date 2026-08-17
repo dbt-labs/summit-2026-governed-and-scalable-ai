@@ -1,0 +1,21 @@
+# Credential-free profile for the GitHub Actions parse-and-lint gate.
+#
+# `dbt parse` and `sqlfluff lint` resolve the Snowflake adapter without opening a
+# connection, so every value below is a placeholder. Nothing here is a real
+# credential and nothing here should ever become one.
+#
+# The warehouse-backed `dbt build` runs separately as a dbt platform CI job using
+# managed credentials that are not stored in this repository.
+merlinco_apothecaries:
+  target: ci
+  outputs:
+    ci:
+      type: snowflake
+      account: placeholder
+      user: placeholder
+      password: placeholder
+      role: placeholder
+      database: placeholder
+      warehouse: placeholder
+      schema: placeholder
+      threads: 4

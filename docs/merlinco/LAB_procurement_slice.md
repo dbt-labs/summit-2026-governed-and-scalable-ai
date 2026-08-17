@@ -9,8 +9,10 @@ That is the thesis of "Governed & Scalable AI-assisted Analytics with dbt" in on
 ## What already exists
 
 The four raw tables are already declared as **sources** (and PK-tested) in
-`models/staging/alembic_ops/_alembic_ops__sources.yml`, and loaded by `dbt seed`. Build
-staging on top of them with `source('alembic_ops', '<table>')`:
+`models/staging/alembic_ops/_alembic_ops__sources.yml`. Their raw relations are
+pre-built in the workshop environment. Build staging on top of them with
+`source('alembic_ops', '<table>')`:
+
 
 - `raw_suppliers` — regional ingredient suppliers, with a reliability rating.
 - `raw_ingredients` — ingredients, each sourced from one supplier, with a unit cost.

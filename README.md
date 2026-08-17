@@ -1,32 +1,37 @@
 # 🧙‍♀️✨🌿 Merlin & Co. Apothecaries
 
 Wizard-themed, jaffle-shop-style dbt project for the dbt Summit training
-**"Governed & Scalable AI-assisted Analytics with dbt."** Raw source data lands as
-dbt **seeds** (standing in for raw warehouse tables) and the project builds
-staging → intermediate → marts on top, on **Snowflake**, Fusion-aligned.
+**"Governed & Scalable AI-assisted Analytics with dbt."** Workshop raw source
+relations are pre-built in Snowflake, and the project builds staging → intermediate
+→ marts on top with dbt Fusion. Committed seeds preserve project portability for
+facilitator setup and reuse in other training environments.
 
 The project is built out ~90% as a **governed reference project** (contracts, tests,
 a semantic layer, conventions, and CI). One complete `source → mart` vertical — the
 `alembic_ops` procurement / supply-cost slice — is deliberately left **unbuilt** as a
 hands-on "plan → design → build with AI" lab. See
-[docs/LAB_procurement_slice.md](docs/LAB_procurement_slice.md).
+[docs/merlinco/LAB_procurement_slice.md](docs/merlinco/LAB_procurement_slice.md).
 
 **New here?** Read [CLAUDE.md](CLAUDE.md) (conventions / AI guardrails) and
-[docs/STYLE_GUIDE.md](docs/STYLE_GUIDE.md) first.
+[docs/merlinco/STYLE_GUIDE.md](docs/merlinco/STYLE_GUIDE.md) first.
 
-## Quickstart
+
+## Workshop quickstart
+
+The workshop environment already contains the raw source relations. Trainees do not
+need to load seeds.
 
 ```bash
 dbt deps                     # install dbt_utils
 dbt parse                    # validate the project (no warehouse needed)
-dbt seed                     # load raw CSVs into APOTHECARIES.RAW (run once)
-dbt build                    # run + test all models against your Snowflake connection
+dbt build                    # run + test models against your Snowflake connection
 ```
 
-Staging reads the raw tables via `source()` (declared in
-`models/staging/<system>/_<system>__sources.yml`); the seeds populate those source
-tables. dbt doesn't link a seed to its source, so **`dbt seed` before `dbt build`** —
-the data is static, so it's a one-time step.
+Staging reads the pre-built raw tables through `source()` declarations in
+`models/staging/<system>/_<system>__sources.yml`. Facilitators setting up the project
+in a new Snowflake environment can use the committed seeds to provision those raw
+relations before the workshop.
+
 
 Local dev needs a `~/.dbt/profiles.yml` (copy [profiles.example.yml](profiles.example.yml));
 once the repo is linked to the dbt platform, the connection is managed there instead.
@@ -42,7 +47,8 @@ models/
 ├── intermediate/     # int_ models — joins, fan-out, aggregation
 └── marts/            # dim_ / fct_ + enforced contracts, tests, and the semantic layer
 macros/               # shared cleaning macros (to_boolean, copper_to_gold, conform_region, …)
-seeds/medium_data/    # the 12 raw CSVs (3 source systems); `dbt seed` loads them to APOTHECARIES.RAW
+seeds/medium_data/    # portable raw CSV fixtures for facilitator/environment setup
+
 ci/                   # dummy profile for warehouse-free CI (parse + lint)
 docs/
 ├── ERD.md                     # full schema diagram (columns, types, PK/FK markers)
@@ -66,7 +72,8 @@ The 12 tables come from three fictional source systems:
 
 ## ERD
 
-See **[docs/ERD.md](docs/ERD.md)** for the full schema diagram. Quick relationship overview:
+See **[docs/merlinco/ERD.md](docs/merlinco/ERD.md)** for the full schema diagram. Quick relationship overview:
+
 
 ```mermaid
 erDiagram
@@ -110,8 +117,10 @@ and a semantic layer defines the governed metrics.
 
 ## Where the data comes from
 
-The 12 raw CSVs in `seeds/medium_data/` are committed and ready to `dbt seed` — no
-generation step is needed to use this repo. They were produced by a deterministic,
+The 12 raw CSVs in `seeds/medium_data/` are committed as portable setup fixtures; the
+workshop itself uses pre-built raw relations. The fixtures were produced by a deterministic,
 stdlib-only generator (seeded RNG, so output is byte-identical on every run) that lives
-outside this training repo. See **[docs/DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md)** for
+outside this training repo. See **[docs/merlinco/DATA_DICTIONARY.md](docs/merlinco/DATA_DICTIONARY.md)** for
 column-level details and the deliberate data quirks staging is built to clean up.
+
+

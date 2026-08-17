@@ -1,6 +1,6 @@
 # Demo-outline plan — Governed & Scalable AI-assisted Analytics with dbt
 
-This directory will hold the facilitator run-of-show for the workshop. Each file becomes a slide-development and delivery contract: learning objective, key messages, script starters, exact Studio/Wizard actions, participant mode, decision checkpoint, expected artifacts, validation evidence, recovery path, and companion-session callouts.
+This directory contains the facilitator run-of-show drafts for the workshop. Each file is a slide-development and delivery contract: learning objective, key messages, script starters, exact Studio/Wizard actions, participant mode, decision checkpoint, expected artifacts, validation evidence, recovery path, and companion-session callouts.
 
 The workshop follows one continuous story:
 
@@ -11,9 +11,9 @@ The workshop follows one continuous story:
 5. Prove that review and independent dbt enforcement catch errors regardless of author.
 6. Close with the operating model for scaling across projects and beyond dbt Platform.
 
-## Proposed run-of-show
+## Run-of-show
 
-| Order | Proposed file | Topic and outcome | Delivery mode | Target time |
+| Order | File | Topic and outcome | Delivery mode | Target time |
 |---|---|---|---|---:|
 | 00 | `00_intro.md` | Tour the completed project, name the missing Alembic slice, establish the Guide → Enforce → Runtime model, and set the workshop contract. | Facilitator walkthrough + group discussion | 12 min |
 | 01 | `01_ungrounded_to_governed.md` | Contrast an ungrounded request with Wizard’s project-aware baseline; define why durable repository policy is still necessary. | Facilitator demo | 10 min |
@@ -24,7 +24,17 @@ The workshop follows one continuous story:
 | 06 | `06_operational_and_agentic_extensions.md` | Demonstrate job-investigation and agentic PR-review possibilities; distinguish what is repo-governed, Platform-governed, and beyond-platform. | Facilitator showcase / pre-record fallback | 8 min |
 | 07 | `07_conclusion_and_scale.md` | Recap the operating model, identify Monday-morning adoption steps, and map the next control planes. | Facilitator close | 5 min |
 
-**Total target time: 120 minutes.** The opening and transitions absorb small timing variance; the Alembic build remains the protected centerpiece.
+**Total target time: 120 minutes.** This is content runtime with no scheduled break. Confirm whether the event slot includes opening logistics, a break, or Q&A before finalizing slides.
+
+### Timing guardrails
+
+Protect demo 04 as the centerpiece. If the session is running long, compress in this order:
+
+1. Use the prepared project-grounding comparison in demo 01 instead of waiting on a second live response.
+2. At minute 18 of demo 02, apply the prepared governance-assets checkpoint after the human decisions are captured.
+3. Skip the optional semantic implementation in demo 04; retain the mart build and result checks.
+4. Use recorded evidence for demos 05 and 06 rather than shortening the review or action-boundary discussion.
+5. Preserve at least three minutes for demo 07’s adoption commitment.
 
 ## Why this sequence
 
@@ -34,9 +44,12 @@ The workshop follows one continuous story:
 - Semantic governance is a decision checkpoint, not a separate large build. This preserves the workshop focus while pointing attendees to the dedicated Semantic Layer workshop.
 - Review, contracts/tests, and job investigation are best showcased against prepared examples. They need predictable defects and platform/runtime state, which makes them poor 40-person hands-on labs.
 
-## Starting-state design to derive next
 
-The active learner project should start with a deliberately small set of visible, discoverable gaps. Keep the complete answer key in `training_assets/reference/`; never silently remove context.
+## Starting-state design
+
+The active learner project starts with a deliberately small set of visible, discoverable gaps. Keep the complete answer key in `training_assets/reference/`; never silently remove context.
+
+The derived active overlay and its reset checks are maintained in [`../trainee_starter_manifest.md`](../trainee_starter_manifest.md). Keep that manifest, this table, and the per-demo convergence maps synchronized.
 
 | Asset | Learner state | Workshop treatment | Reference source |
 |---|---|---|---|
@@ -54,20 +67,23 @@ The active learner project should start with a deliberately small set of visible
 
 ## Delivery dependencies and content boundaries
 
-Before we create final per-demo files, complete or confirm these dependencies:
+Current status before workshop delivery:
 
-1. **Reference gap:** create the semantic, review, and job-investigation skills, their references, PR template, CODEOWNERS, job runbook, and governance scorecard. The route map already names those assets, so their absence must be resolved before the final acceptance scenarios.
-2. **Prepared examples:** create a deliberately flawed AI-authored change and a known failing job/run with stable evidence. Decide which interactions are live versus recorded fallback.
-3. **Product UX verification:** verify the current Summit build supports the exact Wizard custom-skill discovery/invocation, approval-mode, review, and job-debug UX used in the demos. Keep product claims in facilitator materials tied to current documentation.
-4. **Starting-state branch/overlay:** derive the trainee assets only after the reference system passes the four acceptance scenarios. Use `TODO(training)` markers for refinements and preserve all answer-key assets under `training_assets/reference/`.
+1. **Reference assets — complete:** semantic, review, job-investigation, PR/ownership, runbook, and scorecard assets exist in the tested reference system.
+2. **Starting overlay — complete:** sparse/refine-live and ready assets are active; intentional source/layer gaps remain absent.
+3. **Demo drafts — complete:** `00` through `07` exist and map their live work to tested reference concepts.
+4. **Prepared examples — pending:** create a deliberately flawed AI-authored change and a known failing job/run with stable evidence; decide live versus recorded fallback.
+5. **Product UX verification — pending:** verify the delivery build supports the exact Wizard custom-skill discovery/invocation, approval-mode, review, and job-debug UX used in the demos. Keep product claims tied to current documentation.
 
 ## Companion-session callouts
 
 Use these as concise handoffs, not workshop detours:
 
-- **Semantic Layer workshop:** deeper metric semantics, MetricFlow design, and governed analytical consumption. Mention in `03` and after the optional Alembic supply-cost/margin extension in `04`.
+- **Semantic Layer workshop:** deeper metric semantics, MetricFlow design, and governed analytical consumption. Mention in `03` and after the optional approved brew-metrics extension in `04`.
 - **Creating context with dbt MCP Server:** trusted context and least-privilege external-agent integration. Mention in `06` and `07`.
-- **AI in analytics / Accelerating analytics with AI:** analyst-facing use of governed marts and metrics. Mention in `01`, `03`, and `07`.
+- **AI in analytics / Accelerating analytics with AI:** analyst-facing use of governed marts and metrics. Mention in `01` and `07`.
+
+
 
 ## Definition of done for each final demo outline
 

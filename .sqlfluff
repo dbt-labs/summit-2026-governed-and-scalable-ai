@@ -12,7 +12,7 @@ indented_using_on = true
 
 [sqlfluff:templater:dbt]
 project_dir = .
-profiles_dir = .
+profiles_dir = ci
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = lower
