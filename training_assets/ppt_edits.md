@@ -31,8 +31,11 @@ Guiding principles:
 | 5 | Companion-session list needs the Semantic Layer workshop added once its name is confirmed. Demos 03, 04, and 07 all hand off to it. | Open |
 | 17 | Project is introduced as "abra & grimoire"; the repo and `docs/merlinco/` use the Merlin & Co. Apothecaries framing throughout. Name the company once here. | Open |
 | 21 | Reword the 80/20 split so it aligns with `03_decision_checkpoints_and_semantic_governance.md`. Currently *"First draft of semantic metrics"* sits under **safe to delegate**, while demo 03 teaches that metric definitions require a human decision before any YAML. The draftable part is syntax; the definition is not. | Open |
+| 26 | Present Guide → Enforce → Runtime as the **industry position, not a dbt Labs opinion**. Anthropic's docs draw the same split — `permissions.deny` for blocking tools/paths, managed `CLAUDE.md` for data-handling reminders — and state that settings are enforced by the client while instruction files "are not a hard enforcement layer." Add one line to that effect, and forward-reference the new convention slide. | Open |
 | 31 | Wrong path. Deck reads `skills/SKILLS.md`; repo convention is `.agents/skills/<skill-name>/SKILL.md`. | Open |
-| 31 | Clarify the Studio caveat. "not in dbt Studio yet — supported locally" applies to installed/managed skill catalogs, not project-root `.agents/skills/`, which is exactly what trainees build and use in demos 02–04. Reword so nobody concludes their repo skills will not work in the sandbox. | Open |
+| 31 | Frame `SECURITY.md` as our choice rather than a standard. `AGENTS.md` is a real cross-tool convention; there is no agreed filename for the safety boundary, and in public repos GitHub already reads root `SECURITY.md` as the vulnerability-disclosure policy. Add the caveat that both files are **Guide**, not **Enforce**. Script note added to `02_governance_operating_model.md` §2. | Open |
+| 31 | Clarify the Studio caveat. **Confirmed against dbt docs 2026-08-18:** project-root `.agents/skills/<name>/SKILL.md` is supported in the dbt platform *and* the CLI, using the same discovery mechanism. The "not in dbt Studio yet" caveat only applies to installed/managed skill catalogs. Reword so nobody concludes their repo skills will not work in the sandbox. | Open |
+| 31 | Add that skills are scanned **at session start** — a skill created mid-session is not picked up until a new chat. This is a delivery-critical detail for the demo 02 → 03 → 04 handoffs. | Open |
 | 33 | **Trim to the skills half.** Keep "build the intermediate + marts skills the same way" (closes demo 02). Move "point your skills at the alembic source / generate the missing slice / this has been the goal all along / watch your guardrails work" onto the **DEMO 04** handoff slide, which lands after 34. This lets demo 03 sit between the skills and the build without splitting or adding a slide. | Open |
 | 34 | **Runs before the Alembic build**, not after. Decision — keep the tested `03 → 04` outline order and let the deck follow it. With slide 33 trimmed, no slide has to move. | Decided 2026-08-17 |
 | 34 | "Feed it an under-documented source" — the project has only three sources and `alembic_ops` is the build target. The under-documented material is the Alembic unit / standard-cost / null-duration ambiguity set from demo 03. Make that explicit. | Open |
@@ -45,7 +48,34 @@ Guiding principles:
 
 ## 2. Slides to add
 
-Only the DEMO handoff slides — 7 of them, one per demo 00–06. See §3.
+### Where the rules live — new content slide, ~1–2 min
+
+Insert **after slide 31**, before the DEMO 02 handoff. Full script, vendor table, quotes,
+and source links are in `demo_outlines/02_governance_operating_model.md` §2 under
+"Slide beat — where the rules live."
+
+Carries three beats:
+
+1. There is no cross-vendor convention. `AGENTS.md` is read by dbt Wizard and Cursor;
+   Claude Code reads `CLAUDE.md` and needs a one-line import to pick up `AGENTS.md`. No
+   vendor documents a safety-boundary filename — the nearest thing is Claude Code's
+   `.claude/rules/security.md`, and that is an example in the docs, not a spec.
+2. A four-row table of instruction files, safety-boundary files, and where enforcement
+   actually lives, for dbt Wizard, Claude Code, Cursor, and Snowflake Cortex.
+3. Every vendor puts real gates in configuration, not Markdown — which makes slide 26
+   vendor-confirmed rather than a dbt Labs opinion.
+
+Placement reasoning: after 31 the room has just seen `AGENTS.md`, `SECURITY.md`, and skills,
+so the table lands as "here is how other tools do the same thing." Before 31 — adjacent to
+26 — it would reference `.cursor/rules/` and `.claude/rules/` before the audience has met
+their dbt equivalents. Slide 26 gets a one-line forward reference instead.
+
+Keep the "we put ours in `SECURITY.md` for visibility in this training" framing, plus the
+caveat that GitHub reads a root `SECURITY.md` as the vulnerability-disclosure policy.
+
+### DEMO handoff slides
+
+7 of them, one per demo 00–06. See §3.
 
 Everything else previously flagged as a missing slide is demo content, and lands on
 the DEMO slides via the `Files` and `Done when` lines rather than earning a teaching
@@ -62,6 +92,7 @@ the DEMO 04 handoff slide.
 
 ```text
 31    The files that guide AI
+NEW   Where the rules live                     (~1–2 min, see §2)
       → DEMO 02 · Governance operating model
 32    Build a skill from a pattern             (inside demo 02)
 33    Build the intermediate + marts skills    (closes demo 02)
@@ -77,7 +108,7 @@ the DEMO 04 handoff slide.
 |---|---:|---|
 | DEMO 00 · Meet the project | 16 | 17 (find the patterns) |
 | DEMO 01 · Ungrounded to governed | 17 | 18 (break it) |
-| DEMO 02 · Governance operating model | 31 | 32 (build a skill) |
+| DEMO 02 · Governance operating model | the new "where the rules live" slide | 32 (build a skill) |
 | DEMO 03 · Decision checkpoints & semantic governance | 33 | 34 (prompt-backs) |
 | DEMO 04 · Build the Alembic slice | 34 | 35 (CODEOWNERS) |
 | DEMO 05 · Review & enforcement | 37 | 38 (review this PR) |

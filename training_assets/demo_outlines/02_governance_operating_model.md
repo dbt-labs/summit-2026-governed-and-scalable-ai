@@ -106,6 +106,71 @@ Use the sparse TODOs to agree that final `AGENTS.md` must contain:
 
 Keep detailed staging joins, mart checklists, and MetricFlow syntax out of `AGENTS.md`.
 
+#### Slide beat — where the rules live (1–2 minutes)
+
+This is deck time, not platform time; it does not draw on the 28-minute demo budget. It
+follows the file inventory on slide 31 and calls back to Guide → Enforce → Runtime on
+slide 26.
+
+**Script starter:**
+
+> “Reasonable question at this point: is there a standard place for any of this? Short
+> answer, no. `AGENTS.md` is read by dbt Wizard and by Cursor. Claude Code reads
+> `CLAUDE.md` instead, so a repo that wants both adds a one-line `CLAUDE.md` importing
+> `AGENTS.md`. And for the safety boundary there is no agreed filename at all — we put
+> ours in `SECURITY.md` for visibility in this training.”
+
+##### There is no cross-vendor convention
+
+Nothing has standardized. The closest thing to a documented location is Claude Code's
+`.claude/rules/security.md`, which appears in Anthropic's docs as an example filename in a
+rules directory — an illustration, not a spec. No other vendor documents a data-handling
+policy file at all.
+
+Verified against vendor documentation, August 2026:
+
+| Tool | Instruction files | Safety-boundary file | Where enforcement actually lives |
+|---|---|---|---|
+| dbt Wizard | `AGENTS.md`, `CLAUDE.md` | none documented | Edit/command approval, sandbox profiles (CLI), destructive-command protection |
+| Claude Code | `CLAUDE.md`, `.claude/rules/*.md` — **not** `AGENTS.md` | `.claude/rules/security.md` (example only) | `permissions.deny`, `PreToolUse` hooks, managed settings |
+| Cursor | `.cursor/rules/*.mdc`, `AGENTS.md` | none documented | `.cursorignore` |
+| Snowflake Cortex | no file convention | none | Model RBAC, `AI_SETTINGS` guardrails, masking and row-access policies |
+
+##### Every vendor puts real gates in configuration, not Markdown
+
+Anthropic's docs draw exactly this distinction in a table of their own: “Block specific
+tools, commands, or file paths” routes to managed settings `permissions.deny`, while “data
+handling and compliance reminders” route to a managed `CLAUDE.md`. Then, plainly:
+
+> Settings rules are enforced by the client regardless of what Claude decides to do.
+> CLAUDE.md instructions shape Claude's behavior but are not a hard enforcement layer.
+
+Cursor's docs make the same admission from the other direction. `.cursorignore` blocks
+indexing, but “the terminal and MCP server tools used by Agent cannot block access to code
+governed by `.cursorignore`,” and complete protection “isn't guaranteed due to LLM
+unpredictability.”
+
+##### The takeaway
+
+Guide → Enforce → Runtime is **vendor-confirmed**. Slide 26 is the industry position, not a
+dbt Labs opinion — there simply is no agreed convention for where the guidance layer is
+established. `AGENTS.md` and `SECURITY.md` are **Guide**. Tool permissions, platform RBAC,
+contracts, tests, and CI are **Enforce** and **Runtime**.
+
+One caveat worth stating out loud: in a public repository, `SECURITY.md` already means
+something else — GitHub reads a root `SECURITY.md` as the vulnerability-disclosure policy
+and surfaces it in the Security tab. Ours is a training choice, made for visibility.
+
+##### Source documentation
+
+- **dbt Wizard:** [skills in the dbt platform](https://docs.getdbt.com/docs/dbt-ai/wizard-platform-skills) · [how dbt Wizard works](https://docs.getdbt.com/docs/dbt-ai/wizard-how-it-works)
+- **Claude Code:** [memory and CLAUDE.md](https://code.claude.com/docs/en/memory) · [permissions](https://code.claude.com/docs/en/permissions) · [hooks](https://code.claude.com/docs/en/hooks.md)
+- **Cursor:** [rules](https://cursor.com/docs/context/rules) · [ignore files](https://cursor.com/docs/reference/ignore-file)
+- **Snowflake Cortex:** [Cortex AI Guardrails](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-ai-guardrails) · [privileges and model access](https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql-privileges-and-access) · [Cortex Analyst](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst)
+
+Re-verify these before delivery. Every one of these products ships frequently, and this
+table is the kind of claim an attendee will check live.
+
 ### 3. Explain the ready shared lifecycle
 
 Open the governed-change workflow and plan template.
