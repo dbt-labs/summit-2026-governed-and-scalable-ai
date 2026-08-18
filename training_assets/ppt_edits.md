@@ -173,7 +173,7 @@ Not trainee-facing, but slides 38, 39, and 42 depend on these existing at delive
 |---|---|
 | Flawed PR for the review showcase (slides 38, 42) | Trainer-side. Not in this repo — only `main`, `feature/asset-buildout-and-test`, and `feature/building-demo-assets` exist today. |
 | Failed / warning dbt job run at a preserved SHA (slide 42) | Trainer-side. Not confirmed. |
-| Agentic PR review artifact (slide 39) | Trainer demo only; trainees have no access. Note that `agentic_pr_review/dbt_pr_review.py` and `azure_pipelines.yml` are both 0 bytes in-repo, so the demo needs to run from elsewhere or from a recording. |
+| Agentic PR review artifact (slide 39) | **Recorded demo attached to the deck.** Decided 2026-08-18 — the `agentic_pr_review/` prototype was removed from the repo, so nothing needs to run live. |
 
 ## 6. Verify or decide
 

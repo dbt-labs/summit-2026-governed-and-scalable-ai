@@ -34,6 +34,5 @@
 /training_assets/reference/ @example-org/analytics-governance
 /training_assets/TODO.md @example-org/analytics-governance
 
-# Facilitator-only automation and workshop materials.
-/agentic_pr_review/ @example-org/data-platform @example-org/analytics-governance
+# Facilitator-only workshop materials.
 /training_assets/demo_outlines/ @example-org/analytics-governance

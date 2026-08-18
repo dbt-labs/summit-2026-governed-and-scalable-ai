@@ -34,6 +34,3 @@
 /training_assets/reference/ @example-org/analytics-governance
 /training_assets/trainee_starter_manifest.md @example-org/analytics-governance
 /training_assets/demo_outlines/ @example-org/analytics-governance
-
-# Facilitator-only automation.
-/agentic_pr_review/ @example-org/data-platform @example-org/analytics-governance
