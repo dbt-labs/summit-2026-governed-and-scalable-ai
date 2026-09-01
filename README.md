@@ -8,11 +8,13 @@ facilitator setup and reuse in other training environments.
 
 The project is built out ~90% as a **governed reference project** (contracts, tests,
 a semantic layer, conventions, and CI). One complete `source → mart` vertical — the
-`alembic_ops` procurement / supply-cost slice — is deliberately left **unbuilt** as a
-hands-on "plan → design → build with AI" lab. See
+`alembic_ops` procurement / supply-cost slice — is deliberately left **unbuilt**.
+Trainees build it twice: first as a minimally governed baseline under `models/warlock/`,
+then as a governed implementation under `models/wizard/`. The completed starter-state
+models remain untouched. See
 [docs/merlinco/LAB_procurement_slice.md](docs/merlinco/LAB_procurement_slice.md).
 
-**New here?** Read [CLAUDE.md](CLAUDE.md) (conventions / AI guardrails) and
+**New here?** Read [AGENTS.md](AGENTS.md) and
 [docs/merlinco/STYLE_GUIDE.md](docs/merlinco/STYLE_GUIDE.md) first.
 
 
@@ -32,30 +34,36 @@ Staging reads the pre-built raw tables through `source()` declarations in
 in a new Snowflake environment can use the committed seeds to provision those raw
 relations before the workshop.
 
-
-Local dev needs a `~/.dbt/profiles.yml` (copy [profiles.example.yml](profiles.example.yml));
-once the repo is linked to the dbt platform, the connection is managed there instead.
+Local development requires a Snowflake connection profile; in dbt Platform the
+connection is managed in the environment settings.
 
 **The business:** Merlin & Co. Apothecaries is a 15-shop potion retail chain spanning five regions. Wizards (customers) buy potions in store, by courier owl, or via a marketplace. Shops brew their own stock from ingredients sourced from regional suppliers, and many customers belong to arcane guilds with tiered memberships.
 
 ## Repo layout
 
-```
+```text
 models/
-├── staging/          # stg_<system>__<entity> — clean + type, reads one source()
-│   └── <system>/     #   + _<system>__sources.yml (raw tables declared as dbt sources)
-├── intermediate/     # int_ models — joins, fan-out, aggregation
-└── marts/            # dim_ / fct_ + enforced contracts, tests, and the semantic layer
+├── staging/          # completed source-facing models and source declarations
+├── intermediate/     # completed join, fanout, and aggregation patterns
+├── marts/            # completed contracted marts and semantic definitions
+├── warlock/          # trainee baseline: staging/intermediate/marts
+├── wizard/           # trainee governed build: staging/intermediate/marts
+└── answer_key/       # disabled facilitator comparison models
 macros/               # shared cleaning macros (to_boolean, copper_to_gold, conform_region, …)
 seeds/medium_data/    # portable raw CSV fixtures for facilitator/environment setup
 
-ci/                   # dummy profile for warehouse-free CI (parse + lint)
-docs/
+ci/                   # dummy profile for warehouse-free CI examples
+docs/merlinco/
 ├── ERD.md                     # full schema diagram (columns, types, PK/FK markers)
 ├── DATA_DICTIONARY.md         # per-table column notes and deliberate data quirks
 ├── STYLE_GUIDE.md             # modeling + naming conventions
-└── LAB_procurement_slice.md   # brief for the hands-on build-with-AI lab
+└── LAB_procurement_slice.md   # brief for the two-pass build-with-AI lab
 ```
+
+The Warlock track uses `__warlock` node-name suffixes to avoid collisions. The Wizard
+track uses the canonical target names. Both tracks use the project’s standard `staging`
+and `marts` schemas; their distinct relation names allow them to coexist.
+
 
 The `medium_data` tier (~15k orders / ~51k order items / 5k customers) is the lab default
 and the only tier `seed-paths` points at.

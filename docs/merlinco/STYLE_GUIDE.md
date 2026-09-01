@@ -8,55 +8,48 @@ other model.
 
 ## Project shape
 
-```
+```text
 seeds/medium_data/   portable raw CSV fixtures for facilitator/environment setup
 models/
-  staging/<source>/  _<source>__sources.yml   — raw tables declared as SOURCES (+ raw tests)
-                     stg_<source>__<entity>   — clean + type, reads one source(), 1:1
-  intermediate/      int_<description>        — joins, fan-out, aggregation
-  marts/             dim_/fct_                — contracted, tested, exposed
-macros/              shared cleaning logic (the reuse layer)
+  staging/<source>/  completed source declarations and source-facing patterns
+  intermediate/      completed join, fanout, and aggregation patterns
+  marts/             completed contracted marts and semantic definitions
+  warlock/            trainee baseline, mirrored staging/intermediate/marts
+  wizard/             trainee governed build, mirrored staging/intermediate/marts
+  answer_key/         disabled facilitator comparison implementation
+macros/               shared cleaning logic
 ```
 
-**Seeds vs. sources.** Workshop raw relations are pre-built, so trainees work through
-`source()` and do not need to load seeds. The committed seeds keep the project
-self-contained for facilitators provisioning another Snowflake account or reusing the
-project in another training. Staging still reads through `source()`, not `ref()` on a
-seed, because that reflects the production pattern and supports source-level metadata
-and tests.
+The completed standard-layer models are read-only workshop patterns. Trainees build the Alembic slice under `models/warlock/` and then `models/wizard/` without moving or modifying those existing models.
+
+**Seeds vs. sources.** Workshop raw relations are pre-built, so trainees work through `source()` and do not need to load seeds. The committed seeds keep the project self-contained for facilitators provisioning another Snowflake account or reusing the project in another training. Staging still reads through `source()`, not `ref()` on a seed, because that reflects the production pattern and supports source-level metadata and tests.
 
 ## Layering, in detail
 
-**Staging** is a thin, predictable clean-up layer. One model per raw table, selecting
-from exactly one `source()`. Rename to conventions, cast to real types, apply the shared
-cleaning macros. No joins, no business logic — this keeps staging cheap to reason about
-and lets everything downstream assume clean inputs.
+**Staging** is a thin, predictable cleanup layer. One model per raw table selects from exactly one `source()`. Rename to conventions, cast to real types, and apply shared cleaning macros. No joins or business logic.
 
-**Intermediate** is where joins and grain changes happen (rolling payments up to order
-grain, collapsing SCD2 to current rows). Ephemeral, so it never clutters the warehouse;
-it exists to keep marts readable.
+**Intermediate** owns joins, deduplication, fanout control, aggregation, and grain changes. It is ephemeral so marts can remain readable without adding warehouse clutter.
 
-**Marts** are the product. Dimensions (`dim_`) describe entities; facts (`fct_`) record
-events at a stated grain. This is the only layer with enforced contracts, the only layer
-other tools/BI/AI should read, and the only layer exposed via the semantic layer.
+**Marts** are public data products. Dimensions (`dim_`) describe entities; facts (`fct_`) record events at a stated grain. This is the contracted and tested layer intended for BI, semantic, and AI-assisted consumption.
+
+Both trainee tracks mirror these layers and use the standard `staging` and `marts` schemas.
 
 ## Naming and structure
 
-- Import CTEs first (one per `ref`), transformation CTEs in the middle, a `final` CTE,
-  then `select * from final`.
-- `snake_case` everywhere; lowercase SQL keywords and identifiers.
-- PK = `<entity>_id`; booleans `is_*`/`has_*`; timestamps `*_at` (TIMESTAMP_NTZ), dates `*_date`.
-- Money: keep `*_copper` (raw integer) and expose `*_gold` (NUMBER(38,2)). Never report in copper.
+- Canonical Wizard models use `stg_<source>__<entity>`, `int_<description>`, `dim_<noun>`, and `fct_<noun>`.
+- Warlock nodes append `__warlock` to the equivalent logical name solely because dbt node names must be unique within a project.
+- Use import CTEs first, transformation CTEs as needed, a `final` CTE, then `select * from final`.
+- Use `snake_case` and lowercase SQL keywords and identifiers.
+- PKs use `<entity>_id`; booleans use `is_*`/`has_*`; timestamps use `*_at`; dates use `*_date` or a date-typed `*_at`.
+- Keep `*_copper` raw integers and expose reporting currency as `*_gold` with `number(38, 2)`.
 
-## The deliberate data quirks (and how we handle them)
+## Deliberate source quirks
 
-The raw feed is intentionally messy so staging has real work (see
-[DATA_DICTIONARY.md](DATA_DICTIONARY.md#deliberate-data-quirks)). The handling is
-centralized where reuse pays off:
+The raw feed is intentionally messy so staging has real work. See [DATA_DICTIONARY.md](DATA_DICTIONARY.md#deliberate-data-quirks).
 
-| Quirk | Handled by |
+| Quirk | Handling |
 |---|---|
-| Timestamp columns (`*_at`) | explicit `timestamp_ntz` casts in staging |
+| Timestamp columns (`*_at`) | Explicit `timestamp_ntz` casts in staging |
 | Messy booleans (`Y/N/yes/no/TRUE/FALSE`) | `to_boolean()` |
 | Copper integer prices | `copper_to_gold()` |
 | Inconsistent CRM region coding | `conform_region()` |
@@ -64,28 +57,20 @@ centralized where reuse pays off:
 
 ## Testing standard
 
-- Every PK: `unique` + `not_null`.
+- Every PK: `unique` and `not_null`.
 - Every FK: `relationships`.
-- Every normalized categorical: `accepted_values` (this catches a new raw variant the
-  moment it appears, instead of it silently flowing downstream).
-- Money and other must-be-present columns: `not_null`.
+- Every normalized categorical: grounded `accepted_values`.
+- Money and other required measures/fields: `not_null`.
+- Composite grains: a combination-uniqueness test where no single-column key exists.
 
 ## Contracts
 
-Marts declare a `data_type` for every column and set `contract: {enforced: true}`. We
-cast each column explicitly in the SQL to the declared type. A contract turns a silent
-schema drift (a renamed column, a changed type from an AI edit) into a **loud build
-failure** — which is exactly what makes AI-authored changes safe to accept.
+Wizard marts declare a `data_type` for every public column and enforce their contracts. SQL explicitly casts every public column to the matching type. Contract failures are independent evidence that an implementation drifted from its approved interface.
 
-## Semantic layer
+## Semantic Layer
 
-Metrics are defined once (`_semantic_models.yml` + `metrics.yml`) and queried through
-the semantic layer. This is the governance boundary for self-serve and AI-assisted
-analytics: everyone gets the same definition of "revenue," and no one re-derives it in
-ad hoc SQL.
+Canonical metrics and semantic properties live in the existing mart properties and metric YAML. Reuse those definitions before proposing a new business number. Any Alembic semantic extension must be based on the validated Wizard mart and approved cost, unit, time, and null semantics.
 
-## CI
+## CI and enforcement
 
-Every PR runs `dbt parse` + `sqlfluff lint` (no warehouse needed) via GitHub Actions,
-plus the CODEOWNERS check. The full `dbt build` gate (which needs Snowflake) runs as a
-dbt platform CI job once the repo is linked.
+Repository workflow files are inert examples unless deliberately activated. Warehouse-backed builds, contracts, tests, and semantic validation run through the configured dbt Platform development or CI environment. Repository instructions guide behavior; dbt checks and accountable review enforce acceptance.

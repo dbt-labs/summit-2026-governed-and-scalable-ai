@@ -6,16 +6,15 @@ This repository is the workshop project for Merlin & Co. Apothecaries, a wizard-
 
 Workshop raw relations are pre-built in the `raw` schema and declared as dbt sources. Models follow a **staging → intermediate → marts** architecture. Supporting project documentation lives under `docs/merlinco/`.
 
-
-The `alembic_ops` procurement slice is intentionally unfinished. Trainees will plan and build it during the workshop. Disabled comparison models live under `models/answer_key/`; do not copy them into the learner implementation.
+The completed starter-state models under `models/staging/`, `models/intermediate/`, and `models/marts/` are implementation patterns and must remain unchanged during the workshop. The `alembic_ops` procurement slice is intentionally unfinished. Trainees build a baseline under `models/warlock/` and the governed version under `models/wizard/`. Warlock node names use a `__warlock` suffix; Wizard uses the canonical target names. Disabled comparison models live under `models/answer_key/`; do not use them as implementation input.
 
 ## Layer rules
 
-| Layer | Path | Materialization | Required behavior |
-|---|---|---|---|
-| staging | `models/staging/<source>/` | view | Read one `source()` at raw-table grain. Rename, cast, and clean without joins. |
-| intermediate | `models/intermediate/` | ephemeral | Own joins, fanout control, deduplication, aggregation, and grain changes. |
-| marts | `models/marts/` | table | Publish contracted, tested, documented `dim_*` and `fct_*` data products. |
+| Layer | Completed patterns | Trainee track path | Materialization | Required behavior |
+|---|---|---|---|---|
+| staging | `models/staging/<source>/` | `models/<track>/staging/` | view | Read one `source()` at raw-table grain. Rename, cast, and clean without joins. |
+| intermediate | `models/intermediate/` | `models/<track>/intermediate/` | ephemeral | Own joins, fanout control, deduplication, aggregation, and grain changes. |
+| marts | `models/marts/` | `models/<track>/marts/` | table | Publish contracted, tested, documented `dim_*` and `fct_*` data products. |
 
 Use `source()` and `ref()` instead of hardcoded relations. Preserve unaffected interfaces and validate material changes with dbt rather than relying on plausible generated code.
 

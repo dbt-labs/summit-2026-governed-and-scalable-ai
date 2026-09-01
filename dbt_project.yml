@@ -47,11 +47,40 @@ models:
     marts:
       +materialized: table
       +schema: marts
+    # Workshop comparison tracks. Existing project models remain in the standard
+    # staging/intermediate/marts paths; trainees create the two Alembic solutions here.
+    warlock:
+      +tags: [warlock]
+      staging:
+        +materialized: view
+        +schema: staging
+      intermediate:
+        +materialized: ephemeral
+      marts:
+        +materialized: table
+        +schema: marts
+    wizard:
+      +tags: [wizard]
+      staging:
+        +materialized: view
+        +schema: staging
+      intermediate:
+        +materialized: ephemeral
+      marts:
+        +materialized: table
+        +schema: marts
     # Reference solutions for the procurement lab — parsed but never built.
-    # Enable a single model locally to run/compare (e.g. `dbt build -s dim_suppliers`
-    # with `+enabled: true`), but keep the folder disabled on main.
+    # Keep the folder disabled on main and out of trainee implementation inputs.
     answer_key:
       +enabled: false
+      staging:
+        +materialized: view
+        +schema: staging
+      intermediate:
+        +materialized: ephemeral
+      marts:
+        +materialized: table
+        +schema: marts
 
 
 seeds:

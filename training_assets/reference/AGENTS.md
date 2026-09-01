@@ -6,8 +6,9 @@ This file is always-on context for people and AI assistants working in this dbt 
 
 ## Project context and authoritative sources
 
-Merlin & Co. Apothecaries is a Snowflake dbt project with pre-built workshop source relations modeled through **staging → intermediate → marts**. The completed `abra_pos` and `grimoire_crm` slices are the implementation patterns. The `alembic_ops` procurement/supply-cost slice is the intentional hands-on build.
+Merlin & Co. Apothecaries is a Snowflake dbt project with pre-built workshop source relations modeled through **staging → intermediate → marts**. The completed `abra_pos` and `grimoire_crm` slices under the standard model paths are read-only implementation patterns. The `alembic_ops` procurement/supply-cost slice is built first as a Warlock baseline and then as a governed Wizard implementation.
 
+Do not modify the completed starter-state models or the Warlock baseline while implementing the governed track. Governed Alembic SQL/YAML belongs under `models/wizard/`; disabled comparison models under `models/answer_key/` are facilitator-only evidence.
 
 Read the appropriate source of truth before proposing or editing a material change:
 
@@ -15,25 +16,24 @@ Read the appropriate source of truth before proposing or editing a material chan
 - Source grain, keys, raw columns, and deliberate quirks: `docs/merlinco/ERD.md` and `docs/merlinco/DATA_DICTIONARY.md`
 - Procurement lab target lineage and open business decisions: `docs/merlinco/LAB_procurement_slice.md`
 - Existing patterns: authored SQL and properties YAML in `models/staging/`, `models/intermediate/`, and `models/marts/`
-- Canonical metrics: `models/marts/_semantic_models.yml` and `models/marts/metrics.yml`
+- Canonical metrics: semantic properties in `models/marts/_marts.yml` and definitions in `models/marts/metrics.yml`
 - Task selection: `.agents/ROUTING.md`
-- Human decision and evidence record: `.agents/templates/dbt-change-plan.md`
+- Human decisions and required evidence: the active governed-change record selected by the workshop workflow
 - Sensitive-data and action boundaries: `SECURITY.md`
-
 
 ## Layer rules
 
-| Layer | Path | Materialization | Required behavior |
+| Layer | Governed trainee path | Materialization | Required behavior |
 |---|---|---|---|
-| Staging | `models/staging/<source>/` | view | Read exactly one `source()` at a 1:1 grain. Rename, cast, and clean only. No joins or business logic. |
-| Intermediate | `models/intermediate/` | ephemeral | Perform joins, fanout control, and grain changes. Keep marts readable. Do not expose this layer directly. |
-| Marts | `models/marts/` | table | Expose dimensions and facts only. State grain clearly; enforce contracts; add tests and descriptions; assess Semantic Layer impact. |
+| Staging | `models/wizard/staging/` | view | Read exactly one `source()` at a 1:1 grain. Rename, cast, and clean only. No joins or business logic. |
+| Intermediate | `models/wizard/intermediate/` | ephemeral | Perform joins, fanout control, and grain changes. Keep marts readable. Do not expose this layer directly. |
+| Marts | `models/wizard/marts/` | table | Expose dimensions and facts only. State grain clearly; enforce contracts; add tests and descriptions; assess Semantic Layer impact. |
 
 Layer rules are always-on project context. Do not create separate skills that merely repeat them.
 
 ## Naming, SQL, and reuse
 
-- Models: `stg_<source>__<entity>`, `int_<description>`, `dim_<noun>`, `fct_<noun>`.
+- Wizard models: `stg_<source>__<entity>`, `int_<description>`, `dim_<noun>`, `fct_<noun>`. Warlock nodes use the same logical names with a `__warlock` suffix solely to avoid dbt node collisions.
 - Columns: `snake_case`; PKs use `<entity>_id`; booleans use `is_*`/`has_*`; timestamps use `*_at`; dates use `*_date` or date-typed `*_at`.
 - Money: retain raw `*_copper` integers and expose `*_gold` as `number(38, 2)`. Gold is the reporting currency; 100 copper equals one gold crown.
 - SQL: use import CTEs for each `source()`/`ref()`, transformation CTEs as needed, a `final` CTE, and `select * from final`. Use lowercase SQL and identifiers.
@@ -44,9 +44,9 @@ Layer rules are always-on project context. Do not create separate skills that me
 
 ## Data products and independent enforcement
 
-Marts are the trusted data products. They must have:
+Wizard marts are the trusted workshop data products. They must have:
 
-1. An enforced contract in `models/marts/_marts.yml`, with a `data_type` for every column and explicit matching casts in model SQL.
+1. An enforced contract in the Wizard mart properties YAML, with a `data_type` for every column and explicit matching casts in model SQL.
 2. Tests: `unique` and `not_null` for every PK; `relationships` for every FK; `accepted_values` for normalized categoricals; `not_null` for required measures/fields.
 3. Model and key-column descriptions.
 4. Scoped warehouse-backed validation with `dbt build --select +<model>+` and SQLFluff validation for changed SQL.

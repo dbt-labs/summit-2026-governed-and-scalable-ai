@@ -1,51 +1,33 @@
 # answer_key/ — expected reference solutions (disabled)
 
-Complete, governed implementations of the procurement / supply-cost slice that the
-hands-on lab asks you to build.
-They're here so you can **compare your own work** against a worked reference.
+This directory contains the facilitator comparison implementation of the procurement and supply-cost slice. It is used after trainees build the Warlock and Wizard tracks; it is never implementation input.
 
 ## Layout
 
-Mirrors the main `models/` tree — `staging/`, `intermediate/`, `marts/`, each with its
-own properties YAML:
-
-```
+```text
 answer_key/
-├── staging/       stg_alembic_ops__*__expected.sql + _stg_alembic_ops.yml
-├── intermediate/  int_potion_supply_cost__expected.sql + _int.yml
-└── marts/         dim_suppliers__expected.sql, fct_brews__expected.sql + _marts.yml
+├── staging/       four stg_alembic_ops__*__expected models + properties YAML
+├── intermediate/  int_potion_supply_cost__expected and int_brews_with_supply_cost__expected
+└── marts/         dim_suppliers__expected and fct_brews__expected + properties YAML
 ```
 
-## How it's wired
+## How it is wired
 
-- The whole folder is **disabled** in `dbt_project.yml` (`answer_key: +enabled: false`),
-  so these models are parsed but never built, and they stay out of the active DAG,
-  `dbt build`, docs, and the semantic layer.
-- Every answer-key model has a `__expected` suffix. The suffix makes this a closed,
-  disabled comparison DAG and leaves unsuffixed names available for the active learner
-  implementation.
-- Answer-key models `ref()` other expected answer-key models. They may reference shared,
-  pre-existing project models such as `stg_abra_pos__potions` and `stg_alembic_ops__shops`.
+- The folder is disabled in `dbt_project.yml`, so these models stay out of the active DAG and normal builds.
+- Every node has a `__expected` suffix, forming a closed comparison DAG without colliding with trainee nodes.
+- Expected models may reuse completed shared models such as `stg_abra_pos__potions` and `stg_alembic_ops__shops`.
+- The expected architecture maps to the canonical Wizard names after removing `__expected`.
 
-## Using them
+## Comparison use
 
-- **Read to compare:** just open the files.
-- **Run one to compare output:** temporarily enable the expected answer-key models in a
-  separate branch or scratch schema, then select the suffixed name, for example
-  `dbt build --select dim_suppliers__expected`. Do not enable them in the learner path.
+Compare the Wizard track with this implementation only after participant work is complete. Focus on:
 
-## Try not to peek first
+- the same four staging, two intermediate, and two mart nodes;
+- equivalent lineage and grains;
+- approved cost and null semantics;
+- public columns, contracts, tests, and descriptions; and
+- warehouse-backed validation behavior.
 
-The point of the lab is the build. Keep this folder out of the trainee starting state
-until the comparison/review moment.
+SQL formatting and expression shape may differ while remaining governed and equivalent.
 
-## Contents
-
-| Layer | Models |
-|---|---|
-| staging | `stg_alembic_ops__suppliers__expected`, `…__ingredients__expected`, `…__potion_ingredients__expected`, `…__brew_events__expected` |
-| intermediate | `int_potion_supply_cost__expected` |
-| marts | `dim_suppliers__expected`, `fct_brews__expected` |
-
-`int_potion_supply_cost__expected` documents a deliberate simplifying assumption
-(recipe/ingredient unit handling) in its header — a good discussion point.
+If a facilitator needs to execute an expected model, enable the required closed answer-key dependency slice only in a separate branch or scratch schema. Keep the folder disabled in the trainee baseline.
