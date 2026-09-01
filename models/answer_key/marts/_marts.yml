@@ -1,8 +1,7 @@
 version: 2
 
-# [answer key — disabled] Expected marts for the procurement lab. Contracts are declared
-# for fidelity; they are not enforced while the folder is disabled (not built).
-
+# [answer key — disabled] Promoted from the reviewed governed Wizard implementation.
+# Contracts are retained for fidelity but are not enforced while this folder is disabled.
 models:
   - name: dim_suppliers__expected
     description: Supplier dimension — one row per ingredient supplier.
@@ -30,28 +29,31 @@ models:
         data_type: integer
         description: Supplier reliability rating from 1 through 5.
         data_tests:
+          - not_null
           - accepted_values:
               arguments:
                 values: [1, 2, 3, 4, 5]
       - name: contracted_since
         data_type: date
         description: Date the supplier contract began.
+        data_tests: [not_null]
 
   - name: fct_brews__expected
     description: >
-      Brew-batch-grain fact with estimated standard potion and batch supply cost.
-      Source-null brew duration is intentionally preserved.
+      Brew-batch fact — one row per production batch. Standard cost uses current
+      recipe quantities and ingredient unit costs; estimated batch cost multiplies
+      that per-potion standard by batch_size and is not actual procurement or margin.
     config:
       contract:
         enforced: true
     columns:
       - name: brew_id
         data_type: varchar
-        description: Primary key — brew identifier.
+        description: Primary key — brew batch identifier.
         data_tests: [unique, not_null]
       - name: potion_sku
         data_type: varchar
-        description: FK to dim_potions.
+        description: FK to dim_potions for the brewed potion.
         data_tests:
           - not_null
           - relationships:
@@ -60,7 +62,7 @@ models:
                 field: potion_sku
       - name: shop_id
         data_type: varchar
-        description: FK to dim_shops.
+        description: FK to dim_shops for the shop hosting the brew.
         data_tests:
           - not_null
           - relationships:
@@ -69,50 +71,48 @@ models:
                 field: shop_id
       - name: cauldron_id
         data_type: varchar
-        description: Production cauldron identifier; no modeled cauldron dimension exists.
+        description: Operational cauldron identifier; no dimension exists.
         data_tests: [not_null]
       - name: quality_check
         data_type: varchar
-        description: Batch quality result, lowercased.
+        description: Normalized quality result; both pass and fail batches are retained.
         data_tests:
+          - not_null
           - accepted_values:
               arguments:
                 values: [pass, fail]
-      - name: passed_quality_check
-        data_type: boolean
-        description: Whether the batch passed its quality check.
-        data_tests: [not_null]
       - name: brewer_name
         data_type: varchar
         description: Recorded brewer name.
         data_tests: [not_null]
       - name: batch_size
         data_type: integer
-        description: Number of potion units produced in the batch.
+        description: Number of potion units in the batch.
         data_tests: [not_null]
       - name: brew_duration_minutes
         data_type: integer
-        description: Observed brewing duration in minutes; nullable when absent in the source.
-      - name: potion_supply_cost_copper
+        description: Recorded duration in minutes; nullable when duration is unknown.
+      - name: standard_supply_cost_copper
         data_type: integer
-        description: Estimated standard supply cost to brew one potion, in copper pieces.
+        description: Estimated standard ingredient cost for one potion in copper pieces.
         data_tests: [not_null]
-      - name: potion_supply_cost_gold
+      - name: standard_supply_cost_gold
         data_type: number(38, 2)
-        description: Estimated standard supply cost to brew one potion, in gold crowns.
+        description: Estimated standard ingredient cost for one potion in gold crowns.
         data_tests: [not_null]
-      - name: batch_supply_cost_copper
+      - name: estimated_batch_supply_cost_copper
         data_type: integer
-        description: Estimated standard supply cost for the full batch, in copper pieces.
+        description: Estimated standard ingredient cost for the full batch in copper pieces.
         data_tests: [not_null]
-      - name: batch_supply_cost_gold
+      - name: estimated_batch_supply_cost_gold
         data_type: number(38, 2)
-        description: Estimated standard supply cost for the full batch, in gold crowns.
+        description: Estimated standard ingredient cost for the full batch in gold crowns.
         data_tests: [not_null]
       - name: brewed_at
         data_type: timestamp_ntz
-        description: Brew event timestamp.
+        description: Timestamp when the batch was brewed.
         data_tests: [not_null]
       - name: brewed_date
         data_type: date
-        description: Calendar date of the brew event.
+        description: Calendar date derived from brewed_at.
+        data_tests: [not_null]

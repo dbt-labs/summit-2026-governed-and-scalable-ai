@@ -19,19 +19,19 @@ Use this skill when adding or materially changing a semantic model, entity, dime
 
 Before editing semantic configuration:
 
-- inspect `AGENTS.md`, `SECURITY.md`, the governed-change workflow, and the approved change plan;
+- inspect `AGENTS.md`, `SECURITY.md`, routing, and the applicable approved project-owned decision artifact;
 - search existing metrics and semantic models for a definition to reuse;
 - confirm the source mart is public, contracted, tested, and at the required grain; and
 - identify the accountable metric or data-product owner.
 
-`TODO(training): Define the complete evidence required for source columns, entities, dimensions, time behavior, consumers, and the project’s installed semantic specification.`
+`TODO(training): Define the complete evidence required for source columns, entities, dimensions, time behavior, consumers, and the project's installed semantic specification.`
 
 ## Workflow
 
 1. Discover existing governed definitions before proposing a new one.
 2. Ground the business question in one trusted public mart and state its grain.
 3. Record unresolved business choices and obtain approval before writing YAML.
-4. Implement the smallest compatible semantic change in the project’s existing format.
+4. Implement the smallest compatible semantic change in the project's existing format.
 5. Validate the definition and record representative results.
 
 `TODO(training): Expand this workflow to capture aggregation or formula, filters, units and currency, time dimension and time zone, null and late-arriving-data treatment, semantic joins, conflict checks, and consumer impact.`
@@ -46,7 +46,7 @@ Stop for a focused human decision when the business question, owner, source-of-t
 
 A technically valid YAML file is not sufficient evidence of completion.
 
-`TODO(training): Define the required parse, Semantic Layer validation, underlying-mart build, representative semantic query, owner approval, and change-plan/PR evidence.`
+`TODO(training): Define the required parse, Semantic Layer validation, underlying-mart build, representative semantic query, owner approval, and approved-artifact/PR evidence.`
 
 ## References
 

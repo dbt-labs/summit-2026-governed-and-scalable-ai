@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 # Copy this template to the project-owned planning path. Populate evidence-backed
 # fields, keep unresolved human decisions pending, and do not implement models.
@@ -9,6 +9,20 @@ plan:
   approval:
     approved_by: null
     evidence: null
+  pre_approval_validation:
+    status: pending
+    checked_at: null
+    checked_by: null
+    checks:
+      source_and_ref_columns_resolve: pending
+      output_origins_match_transformations: pending
+      tests_match_post_transformation_data: pending
+      properties_and_contracts_match_outputs: pending
+      lineage_grain_and_joins_are_coherent: pending
+      formulas_and_acceptance_checks_reconcile: pending
+      build_selector_covers_planned_models: pending
+    findings: []
+    unresolved: []
   target:
     track: null
     root_path: null
@@ -146,6 +160,7 @@ validation:
 # The planning skill initializes this section. Only the implementation/build
 # workflow may update it after the plan is approved.
 verification:
+  # Allowed states: not_run, in_progress, failed, passed.
   status: not_run
   completed_at: null
   dbt_parse:
@@ -155,6 +170,9 @@ verification:
     status: not_run
     command: null
     invocation_id: null
+  sql_lint:
+    status: not_run
+    command: null
   structural_checks:
     status: not_run
     findings: []

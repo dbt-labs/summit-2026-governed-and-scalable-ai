@@ -2,66 +2,62 @@
 
 ## Purpose
 
-This manifest defines the active repository state trainees should receive at the start of the Governed & Scalable AI-assisted Analytics with dbt workshop. It is the maintenance contract between the tested reference system in `training_assets/reference/`, the active root overlay, the two trainee model tracks, and the facilitator demo materials.
+This manifest defines the active repository state trainees receive for the Governed & Scalable AI-assisted Analytics with dbt workshop. It is the maintenance contract between active policy and skills, live-created workshop artifacts, facilitator-only references, and the two trainee model tracks.
 
-The active overlay is intentionally incomplete. Ready-made safety and workflow assets provide a dependable baseline, while visible `TODO(training)` gaps create the live governance-design exercises. Completed reference assets remain available to facilitators under `training_assets/reference/` and must not be silently copied into trainee work.
+The starter includes a coherent governance path and deliberate execution readiness gates. Facilitator references remain under `training_assets/reference/` and must never be copied into trainee planning or implementation.
 
 ## Starting-state asset map
 
-| Asset | Active trainee state | Workshop treatment | Tested reference |
+| Asset | Active trainee state | Workshop treatment | Facilitator reference |
 |---|---|---|---|
-| `AGENTS.md` | Sparse project context and layer rules with visible governance TODOs | Refine live in the governance demo | `training_assets/reference/AGENTS.md` |
-| `SECURITY.md` | Ready training scaffold | Explain boundaries; organization-specific owners remain TODOs | `training_assets/reference/SECURITY.md` |
-| `.agents/skills/building-governed-skills/` | Ready | Use to design and review task-oriented skills | Corresponding reference skill |
-| `.agents/workflows/governed-dbt-change.md` | Ready | Explain and use during governed work | Corresponding reference workflow |
-| `.agents/templates/dbt-change-plan.md` | Ready | Refine or use according to the streamlined workshop design | Corresponding reference template |
-| `.agents/ROUTING.md` | Basic routes plus visible source/layer composition TODOs | Refine live | `training_assets/reference/.agents/ROUTING.md` |
-| `models/warlock/` | Empty mirrored staging/intermediate/marts skeleton | Build the initial minimally governed baseline | Compare with Wizard behavior, not the answer key |
-| `models/wizard/` | Empty mirrored staging/intermediate/marts skeleton | Build the governed Alembic implementation | `models/answer_key/` is facilitator-only comparison |
-| Source onboarding and source-to-target resources | Intentionally absent | Build or simplify live before governed implementation | Corresponding reference assets |
-| Staging, intermediate, and governed-mart skills | Intentionally absent | Build or simplify live with the skill-building standard | Corresponding reference skills/checklists |
-| Governed-metrics skill | Minimal scaffold | Refine around approved semantic decisions | Corresponding reference skill/checklist |
-| Governed-review and job-investigation skills | Ready baseline | Use in prepared showcases | Corresponding reference assets |
-| `.github/pull_request_template.md` and `.github/CODEOWNERS` | Ready baseline | Walk through review and ownership controls | Corresponding reference assets |
-| Governance scorecard | Reference only | Use as a scaling takeaway | `training_assets/reference/docs/governance_scorecard.md` |
+| `AGENTS.md` | Ready governed policy with authoritative sources, lifecycle, prompt-backs, and skill governance | Explain as always-on policy | `training_assets/reference/AGENTS.md` |
+| `SECURITY.md` | Ready training scaffold | Explain boundaries; organization-specific owners remain placeholders | `training_assets/reference/SECURITY.md` |
+| `.agents/ROUTING.md` | Ready outcome-oriented routes and readiness gates | Use throughout planning, skill creation, build, and review | Matching reference routing |
+| `planning-governed-source-to-mart` | Ready | Create and approve the active Alembic build spec | Matching reference skill and template |
+| `building-governed-source-to-mart` | Ready | Stop until the spec is approved and all three layer skills exist; then orchestrate implementation | Matching reference skill |
+| `building-governed-skills` | Ready | Use to revise, evaluate, merge, or retire reusable execution skills; trainer prompts can reproduce the authoring exercise | Matching reference skill |
+| `docs/merlinco/ALEMBIC_BUILD_SPEC.yml` | Intentionally absent | Create live through planning; this is the sole persistent source-to-mart planning and verification artifact | Canonical approved reference spec |
+| Staging, intermediate, and governed-mart skills | Ready canonical versions | Use directly for orchestrator tests; trainer prompts remain facilitator reproducibility assets | Matching promoted reference skills |
+| Governed-metrics skill | Trainee scaffold with visible TODOs | Refine only when the semantic-governance exercise remains in scope | Completed reference skill/checklist |
+| Governed-review and job-investigation skills | Ready | Use for review and operational showcases | Matching reference assets |
+| `.github/pull_request_template.md` and `.github/CODEOWNERS` | Ready | Record approved artifact, evidence, AI assistance, and accountable review | Matching reference assets |
+| `models/warlock/` | Empty mirrored layer skeleton | Build the initial minimally governed baseline | Compare behavior, not answer-key SQL |
+| `models/wizard/` | Empty mirrored layer skeleton | Build only from the active approved spec and active layer skills | `models/answer_key/` remains facilitator-only |
 
-## Intentional trainee gaps
+The old generic governed-change workflow, dbt change plan, source-onboarding workflow, source-to-target design, and layer checklists are retired. They are absent from both active and reference governance trees.
 
-The following active governance assets remain absent at workshop start until the refinement phase decides their final streamlined shape:
+## Intentional live-created asset
 
-- `.agents/workflows/onboarding-source-system.md`
-- `.agents/templates/source-to-target-design.md`
-- `.agents/skills/authoring-staging-models/`
-- `.agents/skills/authoring-intermediate-models/`
-- `.agents/skills/authoring-governed-marts/`
+Before governed implementation can begin, trainees create `docs/merlinco/ALEMBIC_BUILD_SPEC.yml` through the planning skill and obtain approval for every required decision.
 
-The completed starter-state models must remain unchanged. Both trainee tracks start empty. Disabled comparison models remain under `models/answer_key/` with `__expected` names.
+The build orchestrator must stop if the active spec is missing or unapproved, or if an active layer skill becomes unavailable. A missing active asset is never permission to inspect `training_assets/reference/` or `models/answer_key/`.
 
 ## Track naming and isolation
 
-- Warlock models append `__warlock` to node names and use only Warlock refs for the newly created Alembic path.
-- Wizard models use canonical unsuffixed target names and use only Wizard refs for the newly created Alembic path.
-- Both tracks may reuse existing shared sources, macros, `stg_abra_pos__potions`, and `stg_alembic_ops__shops` where the approved lineage requires them.
-- Both tracks use the standard `staging` and `marts` schemas; distinct node/relation names prevent collisions, and tags support track-level selection.
+- Warlock models append `__warlock`; Wizard models use canonical unsuffixed names.
+- New Warlock refs remain within the Warlock track; new Wizard refs remain within the Wizard track.
+- Both tracks may reuse declared sources, shared macros, `stg_abra_pos__potions`, and `stg_alembic_ops__shops` where the active approved spec requires them.
+- Both tracks use the standard `staging` and `marts` schemas; distinct relation names and tags preserve isolation.
 
 ## TODO marker contract
 
-Use the exact prefix `TODO(training):` for workshop gaps. Each marker must name one decision or artifact, point to inspectable evidence, be resolved in a named exercise or retained as organization-specific follow-up, and map to tested reference behavior.
+`TODO(training):` is reserved for a deliberate exercise gap that maps to a named activity and tested reference behavior. The root `AGENTS.md` no longer uses TODOs because its authority, lifecycle, human decision boundaries, and skill governance are established policy. Organization-specific owner/contact placeholders in `SECURITY.md` remain adoption work, not workshop design gaps.
 
 ## Starter-overlay validation
 
 Before publishing or resetting the trainee branch, verify:
 
-- [ ] Active ready assets exist and internal links resolve.
-- [ ] Intentional governance gaps match the final demo sequence.
-- [ ] Completed starter-state SQL/YAML is unchanged.
+- [ ] Active `AGENTS.md`, `SECURITY.md`, routing, planning, build-orchestration, skill-building, review, and job-investigation assets exist and links resolve.
+- [ ] The active Alembic build spec is absent, while all three canonical active layer skills are present.
+- [ ] Retired generic workflows, plans, source-to-target templates, and layer checklists are absent.
+- [ ] Completed starter SQL/YAML is unchanged.
 - [ ] `models/warlock/` and `models/wizard/` contain no trainee SQL/YAML.
-- [ ] Disabled answer-key resources remain disabled and use `__expected` names.
+- [ ] Disabled answer-key resources remain disabled and facilitator-only.
 - [ ] `dbt ls --resource-type model` contains no Warlock or Wizard trainee nodes.
-- [ ] `dbt parse` passes.
-- [ ] Track resource configs resolve without unused-path warnings once models are created.
-- [ ] One ready skill is discoverable from the active `.agents/skills/` path.
+- [ ] `dbt parse --no-partial-parse` passes; empty track config warnings are expected until trainee models exist.
+- [ ] The planning route can create one approved spec without implementation.
+- [ ] The build route stops cleanly when the spec or any layer skill is missing.
 
 ## Maintenance
 
-Update this manifest whenever a demo changes its starting state, a ready asset is added or removed, a reference skill changes materially, the track convention changes, or Platform skill-discovery behavior changes. Preserve the distinction between trainee output and facilitator-only references.
+Update this manifest whenever workshop sequencing, readiness gates, active skills, reference assets, track conventions, or Platform skill-discovery behavior changes. Keep demo outlines and slides synchronized only after the governed workflow and orchestrator acceptance behavior are stable.

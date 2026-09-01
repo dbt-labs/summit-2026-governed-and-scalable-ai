@@ -4,17 +4,22 @@ with source as (
 
 renamed as (
     select
-        -- ids
         supplier_id,
-
-        -- attributes
         supplier_name,
         region,
         reliability_rating::integer as reliability_rating,
-
-        -- timestamps
         contracted_since::date as contracted_since
     from source
+),
+
+final as (
+    select
+        supplier_id,
+        supplier_name,
+        region,
+        reliability_rating,
+        contracted_since
+    from renamed
 )
 
-select * from renamed
+select * from final

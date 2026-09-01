@@ -52,7 +52,7 @@ Capture this before proposing an action:
 
 | Evidence state | Next action | Approval needed? |
 |---|---|---|
-| Confirmed code/config defect | Fix in a branch using the governed-change workflow; add prevention coverage; validate. | Normal code-review path; deployment approval as required. |
+| Confirmed code/config defect | Fix in a branch using the applicable governed planning, implementation, and review route; add prevention coverage; validate. | Normal code-review path; deployment approval as required. |
 | Confirmed data-quality/source issue | Escalate to source/data owner; document impact and containment. | Required for source/data remediation. |
 | Transient infrastructure issue with no data/code change | Recommend retry with evidence. | Explicit approval before retry. |
 | Permissions, warehouse, security, or platform fault | Escalate to responsible owner with run evidence. | Owner action required. |

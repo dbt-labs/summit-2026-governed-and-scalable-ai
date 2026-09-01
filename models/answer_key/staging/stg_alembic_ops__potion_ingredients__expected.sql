@@ -4,14 +4,20 @@ with source as (
 
 renamed as (
     select
-        -- composite natural key / foreign keys
         potion_sku,
         ingredient_id,
-
-        -- recipe component
         quantity::integer as quantity,
         lower(trim(unit)) as unit
     from source
+),
+
+final as (
+    select
+        potion_sku,
+        ingredient_id,
+        quantity,
+        unit
+    from renamed
 )
 
-select * from renamed
+select * from final
