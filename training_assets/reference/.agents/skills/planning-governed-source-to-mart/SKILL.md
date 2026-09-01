@@ -91,7 +91,7 @@ Any material design change after approval must reset the plan to `draft`, identi
 
 ### 6. Validate and hand off
 
-Before completion, verify the spec invariants below and report the spec path, approval state, unresolved items, model count by layer, and next routed skill. Stop without implementing models.
+Before completion, verify the spec invariants below and report the spec path, approval state, unresolved items, and model count by layer. Hand implementation to `building-governed-source-to-mart`; do not route directly to an individual layer skill. Stop without implementing models.
 
 ## Spec invariants
 
