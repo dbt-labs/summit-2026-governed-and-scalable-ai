@@ -4,21 +4,30 @@ with source as (
 
 renamed as (
     select
-        -- ids / foreign keys
         brew_id,
         potion_sku,
         shop_id,
         cauldron_id,
-
-        -- batch attributes
-        batch_size::integer as batch_size,
-        brew_duration_minutes::integer as brew_duration_minutes,
         lower(trim(quality_check)) as quality_check,
         brewer_name,
-
-        -- timestamps
+        batch_size::integer as batch_size,
+        brew_duration_minutes::integer as brew_duration_minutes,
         brewed_at::timestamp_ntz as brewed_at
     from source
+),
+
+final as (
+    select
+        brew_id,
+        potion_sku,
+        shop_id,
+        cauldron_id,
+        quality_check,
+        brewer_name,
+        batch_size,
+        brew_duration_minutes,
+        brewed_at
+    from renamed
 )
 
-select * from renamed
+select * from final

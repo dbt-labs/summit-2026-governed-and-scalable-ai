@@ -1,36 +1,37 @@
 version: 2
 
-# [answer key — disabled] Expected intermediate models for the procurement lab.
 models:
   - name: int_potion_supply_cost__expected
-    description: >
-      One row per potion SKU with estimated standard potion supply cost, rolled
-      up from supplied recipe quantities and current modeled ingredient costs.
+    description: Potion-grain rollup of estimated standard recipe supply cost at current ingredient unit costs.
     columns:
       - name: potion_sku
-        description: Primary key — potion SKU with a modeled recipe.
-        data_tests: [unique, not_null]
+        description: Primary key — potion SKU.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
       - name: ingredient_count
-        description: Number of recipe components contributing to the potion cost.
+        description: Number of ingredient components in the standard recipe.
         data_tests: [not_null]
-      - name: potion_supply_cost_gold
-        description: Estimated standard supply cost to brew one potion, in gold crowns.
+      - name: standard_supply_cost_copper
+        description: Estimated standard cost of ingredients for one potion in copper pieces.
+        data_tests: [not_null]
+      - name: standard_supply_cost_gold
+        description: Estimated standard cost of ingredients for one potion in gold crowns.
         data_tests: [not_null]
 
   - name: int_brews_with_supply_cost__expected
-    description: >
-      One row per brew batch enriched with estimated standard potion and batch
-      supply cost, preserving source-null brew duration.
+    description: Brew-batch enrichment that preserves every event and attaches estimated standard ingredient cost.
     columns:
       - name: brew_id
-        description: Primary key — brew identifier.
+        description: Primary key — brew batch identifier.
         data_tests: [unique, not_null]
-      - name: potion_sku
-        description: FK to the brewed potion.
+      - name: standard_supply_cost_gold
+        description: Estimated standard ingredient cost for one potion in gold crowns.
         data_tests: [not_null]
-      - name: shop_id
-        description: FK to the shop hosting the batch.
-        data_tests: [not_null]
-      - name: batch_supply_cost_gold
-        description: Estimated standard batch supply cost in gold crowns.
+      - name: estimated_batch_supply_cost_gold
+        description: Estimated standard ingredient cost for the full batch in gold crowns.
         data_tests: [not_null]

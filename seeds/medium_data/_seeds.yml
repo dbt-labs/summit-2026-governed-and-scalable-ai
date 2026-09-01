@@ -29,7 +29,7 @@ seeds:
   - name: raw_shops
     description: "Alembic Ops shops (15 rows). Source: alembic_ops.raw_shops."
   - name: raw_suppliers
-    description: "Alembic Ops suppliers (procurement lab — see docs/merlinco/LAB_procurement_slice.md)."
+    description: "Alembic Ops suppliers used in the procurement exercise."
 
   - name: raw_ingredients
     description: "Alembic Ops ingredients (procurement lab)."

@@ -7,9 +7,12 @@
 # Default owner for all source-controlled project assets.
 * @example-org/analytics-engineering
 
-# Always-on governance policy, task routing, workflows, templates, and skills.
-/AGENTS.md @example-org/analytics-governance
+# Always-on security and data-handling policy.
 /SECURITY.md @example-org/analytics-governance
+
+# AI instructions, task routing, and reusable agent skills.
+# Replace this sample owner with the team accountable for governing AI-assisted work.
+/AGENTS.md @example-org/analytics-governance
 /.agents/ @example-org/analytics-governance
 
 # Public data products, contracts, and governed semantic interfaces.

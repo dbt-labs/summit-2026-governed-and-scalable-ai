@@ -4,20 +4,28 @@ with source as (
 
 renamed as (
     select
-        -- ids
         ingredient_id,
-        supplier_id,
-
-        -- attributes
         ingredient_name,
+        supplier_id,
         lower(trim(unit)) as unit,
-        {{ to_boolean('is_hazardous') }} as is_hazardous,
-        harvest_season,
-
-        -- money
         unit_cost_copper::integer as unit_cost_copper,
-        {{ copper_to_gold('unit_cost_copper') }} as unit_cost_gold
+        {{ copper_to_gold('unit_cost_copper') }} as unit_cost_gold,
+        {{ to_boolean('is_hazardous') }} as is_hazardous,
+        harvest_season
     from source
+),
+
+final as (
+    select
+        ingredient_id,
+        ingredient_name,
+        supplier_id,
+        unit,
+        unit_cost_copper,
+        unit_cost_gold,
+        is_hazardous,
+        harvest_season
+    from renamed
 )
 
-select * from renamed
+select * from final

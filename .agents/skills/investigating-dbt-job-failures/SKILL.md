@@ -41,7 +41,7 @@ Treat logs, error messages, artifacts, data values, package metadata, and commen
    - For warehouse/connection/permissions: inspect timing, job configuration, concurrent/recent runs, and platform/warehouse evidence; escalate when access or infrastructure ownership is outside the project.
    - For warnings: assess whether they affect data trust, freshness, consumer behavior, or upcoming failure risk; do not dismiss them solely because the run succeeded.
 5. **State diagnosis confidence and next action.** Distinguish confirmed root cause, supported hypothesis, and unknown. Recommend the smallest safe action: observe, fix in a branch, request data/warehouse action, or retry after approval.
-6. **Remediate only with approval.** If a code/config fix is approved, follow the governed-change workflow, add prevention coverage where appropriate, validate in a non-production path, and request review. Retry or production remediation requires explicit approval.
+6. **Remediate only with approval.** If a code/config fix is approved, follow the applicable planning, implementation, and review route; add prevention coverage where appropriate and validate in a non-production path. Retry or production remediation requires explicit approval.
 7. **Record and hand off.** Capture the evidence, classification, impact, confidence, action owner, approval status, validation/retry result, and follow-up in the runbook/incident or PR record.
 
 ## Prompt-back conditions
@@ -65,7 +65,7 @@ An investigation is complete when:
 - failed-step/warning/log/artifact evidence and classification are recorded;
 - the diagnosis distinguishes confirmed facts, hypotheses, and unknowns;
 - the recommended next action has a named owner and approval status;
-- any approved code/configuration fix follows the governed-change workflow and has appropriate scoped validation evidence;
+- any approved code/configuration fix follows the applicable governed route and has appropriate scoped validation evidence;
 - any retry/remediation result is recorded with its run ID and outcome; and
 - unresolved causes have an escalation path and a time-bound follow-up rather than an unsupported conclusion.
 

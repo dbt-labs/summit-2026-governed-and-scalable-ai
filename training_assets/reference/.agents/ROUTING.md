@@ -1,41 +1,44 @@
 # AI task routing
 
-Use this map after reading `AGENTS.md`. It selects the smallest set of task-specific instructions needed for the request. Always-on policy in `AGENTS.md` and the security boundary in `SECURITY.md` apply to every route.
+Read `AGENTS.md` and `SECURITY.md` first. Start from the requested outcome, then load the smallest applicable skill. Always-on policy remains authoritative; a skill adds conditional execution guidance and cannot approve a human-owned decision.
 
 ## Routing rules
 
-1. Start with the user’s intended outcome, not the file they happened to open.
-2. Load one primary task skill. Add another only when the work genuinely spans both tasks.
-3. For a material change, follow `.agents/workflows/governed-dbt-change.md` and complete `.agents/templates/dbt-change-plan.md` before implementation.
-4. For a new source system or material source slice, also follow `.agents/workflows/onboarding-source-system.md` and complete `.agents/templates/source-to-target-design.md`.
-5. If no route cleanly applies, follow the governed-change workflow, inspect relevant project evidence, and ask a focused prompt-back before inventing a new process.
-6. If the request involves restricted data, credentials, production-impacting action, or unclear tool approval, stop and follow `SECURITY.md`.
+1. Inspect project evidence before deciding the route or making substantive claims.
+2. Use one primary skill. Add another only when the outcome genuinely spans multiple governed tasks.
+3. For planned work, distinguish **planning** from **implementation**. An approved project-owned artifact must connect them when human approval is required.
+4. Do not substitute facilitator references, answer-key models, generic plans, or unapproved notes for the active project-owned artifact.
+5. If a required skill or approved artifact is missing, stop at that readiness gate and create, revise, or approve it through the route below.
+6. Follow `SECURITY.md` before any restricted-data, credential, access, external-tool, production, destructive, retry, or deployment action.
 
 ## Routes
 
-| Request type | Primary skill/workflow | Required artifacts | Notes |
+| Requested outcome | Primary skill | Required artifact or readiness | Handoff |
 |---|---|---|---|
-| Onboard a new source system or material source-to-target slice | `.agents/workflows/onboarding-source-system.md` | Source-to-target design + governed change plan | Orchestrates layer skills only as needed. |
-| Create or change a source declaration or one-to-one staging model | `.agents/skills/authoring-staging-models/SKILL.md` | Change plan when material; source-to-target design for source onboarding | Staging reads one `source()` and preserves raw-table grain. |
-| Create or change a join, rollup, dedupe, fanout-control, or grain-change model | `.agents/skills/authoring-intermediate-models/SKILL.md` | Change plan; source-to-target design when applicable | Intermediate owns multi-input transformation logic. |
-| Create or materially change a public dimension or fact | `.agents/skills/authoring-governed-marts/SKILL.md` | Governed change plan; source-to-target design when applicable | Public marts are contracted, tested, documented products. |
-| Add or materially change a semantic model, measure, dimension, or metric | `.agents/skills/authoring-governed-metrics/SKILL.md` | Governed change plan | Use after the business definition and grain are approved. Do not hand-roll a competing metric. |
-| Review a dbt change or AI-authored proposal | `.agents/skills/reviewing-governed-dbt-changes/SKILL.md` | PR template/review rubric; plan when the change is material | Review implementation and evidence. Do not silently redesign business logic; request decisions where needed. |
-| Investigate a failed dbt Platform job/run | `.agents/skills/investigating-dbt-job-failures/SKILL.md` | Job investigation runbook | Gather run-specific evidence first. Diagnose before proposing a fix or retry. |
-| Create, revise, merge, or retire a shared governance skill | `.agents/skills/building-governed-skills/SKILL.md` | Skill design checklist | Use when a repeatable task needs conditional instructions beyond `AGENTS.md`. |
-| Documentation-only, small configuration, or narrow non-material change | No specialized skill by default | Follow `AGENTS.md`; use a concise plan if the change affects policy, contracts, sources, or downstream interfaces | Apply the closest skill if the change becomes material. |
+| Plan a governed source-to-mart slice | `.agents/skills/planning-governed-source-to-mart/SKILL.md` | Project and warehouse evidence; no implementation | Produce one project-owned build spec, resolve human decisions, and obtain approval. |
+| Build an approved source-to-mart slice | `.agents/skills/building-governed-source-to-mart/SKILL.md` | Approved build spec plus all three layer skills | Implement staging → intermediate → marts, update only spec verification, then review. |
+| Create, revise, merge, or retire a reusable team skill | `.agents/skills/building-governed-skills/SKILL.md` | Outcome, invariants, human boundary, completion evidence, and owner | Create one `SKILL.md` by default; routing changes only when requested and approved. |
+| Create or materially change one source-facing staging model | `.agents/skills/authoring-staging-models/SKILL.md` | Skill must exist; approved spec when part of planned work | Preserve one-source grain and hand material work to review or the orchestrator. |
+| Create or materially change a join, rollup, dedupe, fanout-control, or grain-change model | `.agents/skills/authoring-intermediate-models/SKILL.md` | Skill must exist; approved spec when part of planned work | Validate through a materialized downstream node and hand off to review/orchestration. |
+| Create or materially change a public dimension or fact | `.agents/skills/authoring-governed-marts/SKILL.md` | Skill must exist; approved public decisions/spec when planned | Enforce the contract, assess consumers/semantics, and hand off to review. |
+| Add or materially change a semantic model, entity, dimension, measure, or metric | `.agents/skills/authoring-governed-metrics/SKILL.md` | Human-approved business definition and applicable decision artifact | Validate semantic behavior and consumer impact; do not create a competing metric. |
+| Review a material dbt change or AI-authored proposal | `.agents/skills/reviewing-governed-dbt-changes/SKILL.md` | Diff, applicable approved artifact, implementation evidence, and rubric | Approve, request changes, or block pending a named human decision. |
+| Investigate a failed, warning-bearing, slow, or intermittent dbt Platform run | `.agents/skills/investigating-dbt-job-failures/SKILL.md` | Current project, job/run ID, run evidence, and action authority | Diagnose first; route approved code changes through the applicable planning/implementation/review path. |
+| Documentation-only or clearly non-material change | `AGENTS.md` | No build spec by default | Apply proportionate validation; reroute if policy, contracts, sources, semantics, or public behavior become material. |
 
-## What always applies
+The staging, intermediate, and mart execution skills are active prerequisites for the orchestrator. The trainer prompts under `training_assets/reference/docs/prompts/` are facilitator-only reproducibility assets, not implementation evidence.
+
+## Cross-route boundaries
 
 Every route must:
 
-- inspect real project context before making substantive claims or edits;
-- preserve layer rules, public contracts, governed metric definitions, and unaffected interfaces;
-- state uncertainty and prompt back on unresolved decision rights;
-- use version-controlled artifacts for shared policy;
-- record validation evidence and remaining follow-up;
-- rely on dbt contracts, tests, lint, CI, and human review as independent enforcement.
+- preserve completed starter models, unaffected interfaces, layer rules, and governed semantic definitions;
+- consume approved decisions exactly and return material contradictions to planning;
+- prompt back on unresolved authority, grain, fanout, retention, business meaning, units, nulls, public interfaces, cost, risk, or action permissions;
+- use scoped dbt execution and result checks appropriate to the change;
+- rely on contracts, tests, lint, CI, review, and accountable humans as independent enforcement;
+- avoid creating duplicate plans, checklists, or evidence artifacts.
 
-## Routing maintenance
+## Maintenance
 
-The governance owner reviews this map whenever a new skill is added, a skill is retired, a repeated failure reveals a missing route, or platform behavior changes. Keep routes outcome-oriented and avoid one skill per file or dbt layer.
+The analytics engineering governance owner reviews this map when a skill is added, promoted, merged, or retired; when a readiness gate changes; or when incidents and repeated prompt-backs reveal a missing or ambiguous route.
