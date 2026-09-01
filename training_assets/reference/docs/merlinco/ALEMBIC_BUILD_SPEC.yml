@@ -73,8 +73,8 @@ authority:
     - path: docs/merlinco/DATA_DICTIONARY.md
       established: "Documents columns, logical types, mixed-case units and quality, messy hazardous booleans, copper costs, and nullable brew duration."
   target_requirements:
-    - path: docs/merlinco/LAB_procurement_slice.md
-      established: "Requires four staging models, two intermediates, dim_suppliers, fct_brews, canonical lineage, contracts, tests, lint, and warehouse-backed checks."
+    - authority: authorized_workshop_planning_request
+      established: "Requests dim_suppliers at supplier grain and fct_brews at brew-event grain with estimated standard ingredient supply cost, full brew retention, and explicit exclusions for actual cost, margin, production-to-sales allocation, and unapproved Semantic Layer additions."
   implementation_patterns:
     - path: models/staging/abra_pos/stg_abra_pos__potions.sql
       established: "Uses lower(trim()), to_boolean(), integer casts, and copper_to_gold() in one-source staging."

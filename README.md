@@ -11,8 +11,7 @@ a semantic layer, conventions, and CI). One complete `source → mart` vertical 
 `alembic_ops` procurement / supply-cost slice — is deliberately left **unbuilt**.
 Trainees build it twice: first as a minimally governed baseline under `models/warlock/`,
 then as a governed implementation under `models/wizard/`. The completed starter-state
-models remain untouched. See
-[docs/merlinco/LAB_procurement_slice.md](docs/merlinco/LAB_procurement_slice.md).
+models remain untouched.
 
 **New here?** Read [AGENTS.md](AGENTS.md) and
 [docs/merlinco/STYLE_GUIDE.md](docs/merlinco/STYLE_GUIDE.md) first.
@@ -56,8 +55,7 @@ ci/                   # dummy profile for warehouse-free CI examples
 docs/merlinco/
 ├── ERD.md                     # full schema diagram (columns, types, PK/FK markers)
 ├── DATA_DICTIONARY.md         # per-table column notes and deliberate data quirks
-├── STYLE_GUIDE.md             # modeling + naming conventions
-└── LAB_procurement_slice.md   # brief for the two-pass build-with-AI lab
+└── STYLE_GUIDE.md             # modeling + naming conventions
 ```
 
 The Warlock track uses `__warlock` node-name suffixes to avoid collisions. The Wizard

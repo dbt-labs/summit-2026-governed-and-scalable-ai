@@ -26,7 +26,7 @@ Read `AGENTS.md` and `SECURITY.md` first. Start from the requested outcome, then
 | Investigate a failed, warning-bearing, slow, or intermittent dbt Platform run | `.agents/skills/investigating-dbt-job-failures/SKILL.md` | Current project, job/run ID, run evidence, and action authority | Diagnose first; route approved code changes through the applicable planning/implementation/review path. |
 | Documentation-only or clearly non-material change | `AGENTS.md` | No build spec by default | Apply proportionate validation; reroute if policy, contracts, sources, semantics, or public behavior become material. |
 
-The staging, intermediate, and mart execution skills are active prerequisites for the orchestrator. The trainer prompts under `training_assets/reference/docs/prompts/` are facilitator-only reproducibility assets, not implementation evidence.
+The staging, intermediate, and mart execution skills are required prerequisites for the orchestrator. They are intentionally absent from the trainee starter state and are created during the skill-building demos. The trainer prompts under `training_assets/reference/docs/prompts/` are facilitator-only reproducibility assets, not implementation evidence.
 
 ## Cross-route boundaries
 

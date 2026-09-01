@@ -10,7 +10,7 @@ Use these project-owned sources of truth:
 
 - Structure, naming, layer boundaries, types, and testing conventions: `docs/merlinco/STYLE_GUIDE.md`
 - Raw columns, keys, source grain, relationships, and deliberate quirks: `docs/merlinco/ERD.md` and `docs/merlinco/DATA_DICTIONARY.md`
-- Requested Alembic products, target lineage, and completion outcomes: `docs/merlinco/LAB_procurement_slice.md`
+- Requested Alembic products and initial scope: the explicit planning request supplied by the authorized workshop facilitator
 - Effective paths, schemas, materializations, and tags: `dbt_project.yml`
 - Existing implementation patterns: project-owned SQL and properties YAML in the completed model layers
 - Governed semantic definitions: project-owned semantic properties and metric YAML under `models/marts/`
