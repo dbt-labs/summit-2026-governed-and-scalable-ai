@@ -1,0 +1,165 @@
+version: 1
+
+# Copy this template to the project-owned planning path. Populate evidence-backed
+# fields, keep unresolved human decisions pending, and do not implement models.
+plan:
+  name: null
+  status: draft
+  owner: null
+  approval:
+    approved_by: null
+    evidence: null
+  target:
+    track: null
+    root_path: null
+
+request:
+  business_outcome: null
+  requested_products: []
+  intended_consumers: []
+  out_of_scope: []
+
+authority:
+  project_conventions: []
+  source_structure: []
+  target_requirements: []
+  implementation_patterns: []
+  semantic_definitions: []
+
+evidence:
+  sources:
+    - relation: null
+      established:
+        grain: null
+        primary_key: []
+        important_findings: []
+  existing_patterns:
+    - path: null
+      established: []
+  data_profiles:
+    - subject: null
+      established: null
+      evidence_type: null
+
+decisions:
+  - id: null
+    question: null
+    evidence: []
+    options:
+      - id: null
+        implication: null
+    owner: null
+    status: pending
+    approved_value: null
+    rationale: null
+
+# Add one entry per planned model in dependency order. Inputs are the sole
+# lineage declaration. Keep SQL outputs distinct from properties-YAML columns.
+models:
+  - name: null
+    layer: null
+    path: null
+    properties_path: null
+    materialized: null
+    description_requirement: null
+
+    grain:
+      description: null
+      key: []
+
+    inputs:
+      # Use one or more typed entries:
+      # - source:
+      #     name: source_name
+      #     table: raw_table_name
+      # - ref: upstream_model_name
+      []
+
+    implementation:
+      cte_shape: []
+      # Set joins to forbidden for one-input staging and mart models.
+      joins: null
+      transformations: []
+      # Include join_contracts only when the model joins inputs.
+      join_contracts:
+        - left_input: null
+          right_input: null
+          condition: null
+          cardinality: null
+          join_type: null
+          record_retention: null
+          fanout_control: null
+      # Include aggregation only when the model changes grain by aggregation.
+      aggregation:
+        input_grain: null
+        output_grain: null
+        group_by: []
+        measures:
+          - name: null
+            rule: null
+
+    # Preserve this order in the model's final SQL output.
+    output_columns:
+      - name: null
+        logical_type: null
+        # Use source for pass-through/renamed fields or derived_from for derivations.
+        source: null
+        derived_from: null
+
+    # This section maps to the model entry in dbt properties YAML.
+    properties:
+      description: null
+      model_data_tests: []
+      columns:
+        - name: null
+          # data_type is required for contracted models and optional otherwise.
+          data_type: null
+          description: null
+          data_tests:
+            # Use exact dbt data-test syntax and arguments.
+            []
+
+    contract:
+      enforced: false
+
+    acceptance_checks: []
+
+semantic_scope:
+  status: pending
+  approved: []
+  deferred: []
+
+validation:
+  build_selector: null
+  structural_checks:
+    exact_model_count: null
+    required_by_layer:
+      staging: null
+      intermediate: null
+      marts: null
+    reject_unplanned_models: true
+    reject_unplanned_columns: true
+    reject_missing_tests: true
+    reject_unapproved_lineage: true
+  data_checks: []
+
+# The planning skill initializes this section. Only the implementation/build
+# workflow may update it after the plan is approved.
+verification:
+  status: not_run
+  completed_at: null
+  dbt_parse:
+    status: not_run
+    command: dbt parse
+  dbt_build:
+    status: not_run
+    command: null
+    invocation_id: null
+  structural_checks:
+    status: not_run
+    findings: []
+  data_checks:
+    status: not_run
+    findings: []
+  deviations: []
+  ready_for_review: false
