@@ -104,7 +104,7 @@ Built out today (hero path) vs. left for the hands-on procurement lab:
 | Layer | Built | Lab (unbuilt) |
 |---|---|---|
 | staging | `stg_` for potions, orders, order_items, payments, customers, guilds, guild_memberships, shops | suppliers, ingredients, potion_ingredients, brew_events |
-| intermediate | `int_orders_with_payments`, `int_memberships_current` | `int_potion_supply_cost` |
+| intermediate | `int_customers_with_current_membership`, `int_memberships_current`, `int_order_items_with_order_context`, `int_orders_with_payments`, `int_payments_with_order_context` | `int_potion_supply_cost`, `int_brews_with_supply_cost` |
 | dims | `dim_wizards`, `dim_potions`, `dim_shops`, `dim_dates` | `dim_suppliers` |
 | facts | `fct_orders`, `fct_order_items`, `fct_payments` | `fct_brews` |
 

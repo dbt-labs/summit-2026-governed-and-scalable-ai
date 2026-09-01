@@ -9,7 +9,7 @@ This manifest defines the repository state trainees receive for the Governed & S
 | Asset | Active trainee state | Workshop treatment | Facilitator reference |
 |---|---|---|---|
 | `AGENTS.md` | Ready safety/workflow policy with three bounded discovery TODOs | Complete TODOs 1–3 in Demo 3 from project evidence | `training_assets/reference/AGENTS.md` |
-| `SECURITY.md` | Ready training scaffold | Explain boundaries; organization-specific owners remain placeholders | `training_assets/reference/SECURITY.md` |
+| `SECURITY.md` | Ready root-owned training scaffold | Explain boundaries; organization-specific owners remain placeholders | No duplicate facilitator reference |
 | `.agents/ROUTING.md` | Ready routes that expose missing layer-skill prerequisites | Inspect in Demo 4 and use throughout | Matching reference routing |
 | `building-governed-skills` | Ready | Use in demos 5–6 to create the three layer skills | Matching reference skill |
 | `planning-governed-source-to-mart` | Ready | Introduce in Demo 4; create and approve the Alembic spec in Demo 7 | Matching reference skill and template |
