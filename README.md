@@ -50,8 +50,6 @@ models/
 └── answer_key/       # disabled facilitator comparison models
 macros/               # shared cleaning macros (to_boolean, copper_to_gold, conform_region, …)
 seeds/medium_data/    # portable raw CSV fixtures for facilitator/environment setup
-
-ci/                   # dummy profile for warehouse-free CI examples
 docs/merlinco/
 ├── ERD.md                     # full schema diagram (columns, types, PK/FK markers)
 ├── DATA_DICTIONARY.md         # per-table column notes and deliberate data quirks
