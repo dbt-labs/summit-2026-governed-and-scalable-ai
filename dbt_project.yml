@@ -41,49 +41,50 @@ models:
     +database: apothecaries
     staging:
       +materialized: view
-      +schema: staging
+      +schema: ai_staging
     intermediate:
       +materialized: ephemeral
     marts:
       +materialized: table
-      +schema: marts
+      +schema: ai_marts
     # Workshop comparison tracks. Existing project models remain in the standard
     # staging/intermediate/marts paths; trainees create the two Alembic solutions here.
     warlock:
       +tags: [warlock]
       staging:
         +materialized: view
-        +schema: staging
+        +schema: ai_staging
       intermediate:
         +materialized: ephemeral
       marts:
         +materialized: table
-        +schema: marts
+        +schema: ai_marts
     wizard:
       +tags: [wizard]
       staging:
         +materialized: view
-        +schema: staging
+        +schema: ai_staging
       intermediate:
         +materialized: ephemeral
       marts:
         +materialized: table
-        +schema: marts
+        +schema: ai_marts
     # Reference solutions for the procurement lab — parsed but never built.
     # Keep the folder disabled on main and out of trainee implementation inputs.
     answer_key:
       +enabled: false
       staging:
         +materialized: view
-        +schema: staging
+        +schema: ai_staging
       intermediate:
         +materialized: ephemeral
       marts:
         +materialized: table
-        +schema: marts
+        +schema: ai_marts
 
 
 seeds:
+  +enabled: false
   merlinco_apothecaries:
     +database: apothecaries
     +schema: raw
