@@ -13,15 +13,17 @@ This boundary applies whenever requested work creates, modifies, executes, valid
 
 For all such work:
 
-- do not list, search, read, load, inspect, copy, or use any content under `.agents/`, `models/answer_key/`, or `training_assets/`;
-- the `Governed workflow`, `Human decision and prompt-back boundaries`, `Independent enforcement and evidence`, and `Skill governance and maintenance` sections below do not apply;
+- do not list, search, read, load, inspect, copy, or use any content under `.agents/`, `models/answer_key/`, `models/wizard/`, `training_assets/`, or `docs/`, or the project-root `README.md`;
+- do not read or use completed model SQL or model properties under `models/staging/`, `models/intermediate/`, or `models/marts/`; source declarations and source metadata required for the requested raw source are the only exception;
+- treat `models/warlock/README.md` as the only project-authored contextual guidance file available to Warlock work;
+- limit implementation evidence to the user's request, `models/warlock/README.md`, operational project configuration needed to run dbt, source declarations and metadata for the requested raw source, and direct warehouse observations;
+- the `Project discovery TODOs`, `Governed workflow`, `Human decision and prompt-back boundaries`, `Independent enforcement and evidence`, and `Skill governance and maintenance` sections below do not apply;
 - do not use governed planning, implementation, authoring, review, or routing workflows;
 - do not require or create a build spec, approval artifact, governance checklist, contract, semantic definition, or verification report;
 - keep implementation changes under `models/warlock/`;
 - ensure every created model name ends with `__warlock`;
 - do not modify `models/wizard/` or the completed standard model layers;
-- use only project evidence outside the prohibited paths, source metadata, warehouse observations, and the user's request;
-- run only the ordinary dbt validation needed to confirm that the Warlock models execute.
+- run only ordinary, Warlock-scoped dbt validation needed to confirm that the Warlock models execute.
 
 `SECURITY.md`, platform permissions, restrictions on destructive or production-impacting actions, and restrictions on generated or vendored files continue to apply.
 
