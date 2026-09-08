@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: int_potion_supply_cost__warlock
+    description: One row per potion with aggregated ingredient count and recorded recipe supply cost.
+    columns:
+      - name: potion_sku
+        description: Primary key — potion recipe identifier.
+        data_tests: [unique, not_null]
+      - name: recipe_supply_cost_gold
+        description: Recorded recipe ingredient cost in gold crowns.
+        data_tests: [not_null]
+
+  - name: int_brews_with_supply_cost__warlock
+    description: Brew-grain production batches enriched with recorded recipe and batch supply cost.
+    columns:
+      - name: brew_id
+        description: Primary key — brew identifier.
+        data_tests: [unique, not_null]
+      - name: batch_supply_cost_gold
+        description: Recorded batch supply cost in gold crowns.
+        data_tests: [not_null]

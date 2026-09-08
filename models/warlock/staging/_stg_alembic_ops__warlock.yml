@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__suppliers__warlock
+    description: One row per Alembic Ops supplier.
+    columns:
+      - name: supplier_id
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+
+  - name: stg_alembic_ops__ingredients__warlock
+    description: One row per ingredient with normalized unit, boolean, and gold cost.
+    columns:
+      - name: ingredient_id
+        description: Primary key — ingredient identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        description: FK to the supplying vendor.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__suppliers__warlock')
+                field: supplier_id
+      - name: unit
+        description: Ingredient unit, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: unit_cost_gold
+        description: Ingredient unit cost in gold crowns.
+        data_tests: [not_null]
+      - name: is_hazardous
+        description: Whether the ingredient is hazardous.
+        data_tests: [not_null]
+
+  - name: stg_alembic_ops__potion_ingredients__warlock
+    description: Recipe bridge — one row per potion and ingredient combination.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
+    columns:
+      - name: potion_sku
+        description: FK to the potion recipe.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: ingredient_id
+        description: FK to the recipe ingredient.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__ingredients__warlock')
+                field: ingredient_id
+      - name: unit
+        description: Recipe unit, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+
+  - name: stg_alembic_ops__brew_events__warlock
+    description: One row per production batch with normalized quality check and parsed timestamp.
+    columns:
+      - name: brew_id
+        description: Primary key — brew identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to the brewed potion.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: shop_id
+        description: FK to the brewing shop.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops')
+                field: shop_id
+      - name: quality_check
+        description: Batch quality-check result, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewed_at
+        description: Brew timestamp parsed as TIMESTAMP_NTZ.
+        data_tests: [not_null]

@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: dim_suppliers__warlock
+    description: Supplier dimension — one row per Alembic Ops supplier.
+    columns:
+      - name: supplier_id
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+
+  - name: fct_brews__warlock
+    description: Brew-grain fact with recorded recipe and batch supply costs.
+    columns:
+      - name: brew_id
+        description: Primary key — brew identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to dim_potions.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_potions')
+                field: potion_sku
+      - name: shop_id
+        description: FK to dim_shops.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_shops')
+                field: shop_id
+      - name: quality_check
+        description: Batch quality-check result, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: batch_supply_cost_gold
+        description: Recorded batch supply cost in gold crowns.
+        data_tests: [not_null]
+      - name: brewed_at
+        description: Brew timestamp.
+        data_tests: [not_null]

@@ -1,0 +1,147 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__suppliers
+    description: "One row per Alembic ingredient supplier."
+    columns:
+      - name: supplier_id
+        description: "Primary key — supplier identifier."
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        description: "Supplier display name."
+        data_tests: [not_null]
+      - name: region
+        description: "Supplier region."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: reliability_rating
+        description: "Supplier reliability rating from 1 through 5."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: contracted_since
+        description: "Date the supplier contract began."
+        data_tests: [not_null]
+
+  - name: stg_alembic_ops__ingredients
+    description: "One row per Alembic ingredient with normalized units and current reporting cost."
+    columns:
+      - name: ingredient_id
+        description: "Primary key — ingredient identifier."
+        data_tests: [unique, not_null]
+      - name: ingredient_name
+        description: "Ingredient display name."
+        data_tests: [not_null]
+      - name: supplier_id
+        description: "FK to the ingredient supplier."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('stg_alembic_ops__suppliers')"
+                field: supplier_id
+      - name: unit
+        description: "Ingredient unit, lowercased."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: unit_cost_copper
+        description: "Current ingredient unit cost in copper pieces."
+        data_tests: [not_null]
+      - name: unit_cost_gold
+        description: "Current ingredient unit cost in gold crowns (copper / 100)."
+        data_tests: [not_null]
+      - name: is_hazardous
+        description: "Whether the ingredient is hazardous after boolean normalization."
+        data_tests: [not_null]
+      - name: harvest_season
+        description: "Source harvest season, preserved in source title case."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Autumn, Spring, Summer, Winter, Year-round]
+
+  - name: stg_alembic_ops__potion_ingredients
+    description: "Recipe bridge at one potion and ingredient component."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
+    columns:
+      - name: potion_sku
+        description: "Part of recipe composite key; FK to potion."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('dim_potions')"
+                field: potion_sku
+      - name: ingredient_id
+        description: "Part of recipe composite key; FK to ingredient."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('stg_alembic_ops__ingredients')"
+                field: ingredient_id
+      - name: quantity
+        description: "Required quantity of the ingredient in the potion recipe."
+        data_tests: [not_null]
+      - name: unit
+        description: "Recipe ingredient unit, lowercased."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+
+  - name: stg_alembic_ops__brew_events
+    description: "One row per production batch; pass and fail outcomes and nullable duration values are retained."
+    columns:
+      - name: brew_id
+        description: "Primary key — brew identifier."
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: "FK to the brewed potion."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('dim_potions')"
+                field: potion_sku
+      - name: shop_id
+        description: "FK to the hosting shop."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('dim_shops')"
+                field: shop_id
+      - name: cauldron_id
+        description: "Operational cauldron identifier."
+        data_tests: [not_null]
+      - name: brewed_at
+        description: "Brew timestamp parsed as timestamp_ntz."
+        data_tests: [not_null]
+      - name: batch_size
+        description: "Number of potion units in the batch."
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        description: "Recorded brew duration in minutes; nullable when unknown."
+      - name: quality_check
+        description: "Quality result, lowercased; both pass and fail are retained."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewer_name
+        description: "Recorded brewer name."
+        data_tests: [not_null]

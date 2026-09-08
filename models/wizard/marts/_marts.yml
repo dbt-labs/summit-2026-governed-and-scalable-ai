@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: dim_suppliers
+    description: "Supplier dimension — one row per ingredient supplier."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: supplier_id
+        data_type: varchar
+        description: "Primary key — supplier identifier."
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        data_type: varchar
+        description: "Supplier display name."
+        data_tests: [not_null]
+      - name: region
+        data_type: varchar
+        description: "Supplier region."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: reliability_rating
+        data_type: integer
+        description: "Supplier reliability rating from 1 through 5."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: contracted_since
+        data_type: date
+        description: "Date the supplier contract began."
+        data_tests: [not_null]
+
+  - name: fct_brews
+    description: "Brew-event fact — standard cost is current recipe quantities times current ingredient unit costs; batch cost multiplies that standard by batch_size and is not actual procurement cost or margin."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: brew_id
+        data_type: varchar
+        description: "Primary key — brew event identifier."
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        data_type: varchar
+        description: "FK to dim_potions for the brewed potion."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('dim_potions')"
+                field: potion_sku
+      - name: shop_id
+        data_type: varchar
+        description: "FK to dim_shops for the hosting shop."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: "ref('dim_shops')"
+                field: shop_id
+      - name: cauldron_id
+        data_type: varchar
+        description: "Operational cauldron identifier; no dimension exists."
+        data_tests: [not_null]
+      - name: quality_check
+        data_type: varchar
+        description: "Normalized quality result; both pass and fail events are retained."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewer_name
+        data_type: varchar
+        description: "Recorded brewer name."
+        data_tests: [not_null]
+      - name: batch_size
+        data_type: integer
+        description: "Number of potion units in the batch."
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        data_type: integer
+        description: "Recorded duration in minutes; nullable when unknown."
+      - name: standard_supply_cost_copper
+        data_type: integer
+        description: "Current standard ingredient supply cost for one potion in copper pieces."
+        data_tests: [not_null]
+      - name: standard_supply_cost_gold
+        data_type: "number(38, 2)"
+        description: "Current standard ingredient supply cost for one potion in gold crowns."
+        data_tests: [not_null]
+      - name: estimated_batch_supply_cost_copper
+        data_type: integer
+        description: "Current standard ingredient supply cost for this batch in copper pieces."
+        data_tests: [not_null]
+      - name: estimated_batch_supply_cost_gold
+        data_type: "number(38, 2)"
+        description: "Current standard ingredient supply cost for this batch in gold crowns."
+        data_tests: [not_null]
+      - name: brewed_at
+        data_type: timestamp_ntz
+        description: "Timestamp when the brew event occurred."
+        data_tests: [not_null]
+      - name: brewed_date
+        data_type: date
+        description: "Calendar date derived from brewed_at."
+        data_tests: [not_null]

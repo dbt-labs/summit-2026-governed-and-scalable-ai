@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_potion_supply_cost
+    description: "One current standard ingredient-supply cost per potion recipe."
+    columns:
+      - name: potion_sku
+        description: "Primary key — potion with a recipe cost."
+        data_tests: [unique, not_null]
+      - name: ingredient_count
+        description: "Number of recipe components in the potion standard."
+        data_tests: [not_null]
+      - name: standard_supply_cost_copper
+        description: "Current standard ingredient supply cost per potion in copper pieces."
+        data_tests: [not_null]
+      - name: standard_supply_cost_gold
+        description: "Current standard ingredient supply cost per potion in gold crowns."
+        data_tests: [not_null]
+
+  - name: int_brews_with_supply_cost
+    description: "Brew events enriched with current recipe-standard supply costs; not actual procurement cost."
+    columns:
+      - name: brew_id
+        description: "Primary key — brew identifier."
+        data_tests: [unique, not_null]
+      - name: estimated_batch_supply_cost_copper
+        description: "Estimated current standard ingredient cost for the whole batch in copper pieces."
+        data_tests: [not_null]
