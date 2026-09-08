@@ -2,6 +2,31 @@
 
 This file is always-on policy for people and AI assistants working in the Merlin & Co. Apothecaries workshop project. AI may accelerate exploration, planning, implementation, and review. Authorized humans retain decision rights for business meaning, risk, approval, merge, deployment, and production impact.
 
+## Warlock isolation boundary
+
+Warlock models are an intentionally ungoverned workshop baseline.
+
+This boundary applies whenever requested work creates, modifies, executes, validates, or repairs either:
+
+- any dbt model whose name ends with `__warlock`; or
+- any dbt model under `models/warlock/`.
+
+For all such work:
+
+- do not list, search, read, load, inspect, copy, or use any content under `.agents/`, `models/answer_key/`, or `training_assets/`;
+- the `Governed workflow`, `Human decision and prompt-back boundaries`, `Independent enforcement and evidence`, and `Skill governance and maintenance` sections below do not apply;
+- do not use governed planning, implementation, authoring, review, or routing workflows;
+- do not require or create a build spec, approval artifact, governance checklist, contract, semantic definition, or verification report;
+- keep implementation changes under `models/warlock/`;
+- ensure every created model name ends with `__warlock`;
+- do not modify `models/wizard/` or the completed standard model layers;
+- use only project evidence outside the prohibited paths, source metadata, warehouse observations, and the user's request;
+- run only the ordinary dbt validation needed to confirm that the Warlock models execute.
+
+`SECURITY.md`, platform permissions, restrictions on destructive or production-impacting actions, and restrictions on generated or vendored files continue to apply.
+
+If one request mixes Warlock work with governed Wizard work, stop and ask the user to separate them into distinct requests before inspecting `.agents/`.
+
 ## Project discovery TODOs
 
 The sections below are completed during Demo 3 from project-owned evidence. Keep each answer concise and durable enough to guide later planning and implementation.
@@ -22,7 +47,7 @@ The sections below are completed during Demo 3 from project-owned evidence. Keep
 
 ## Governed workflow
 
-Use `.agents/ROUTING.md` to select the smallest applicable skill.
+For work not covered by the Warlock isolation boundary, use `.agents/ROUTING.md` to select the smallest applicable skill.
 
 For the governed source-to-mart exercise:
 

@@ -23,6 +23,15 @@ clean-targets:
   - "dbt_packages"
 
 # ---------------------------------------------------------------------------
+# Silence warnings for empty workshop resource paths
+# ---------------------------------------------------------------------------
+
+flags:
+  warn_error_options:
+    silence:
+      - UnusedResourceConfigPath
+
+# ---------------------------------------------------------------------------
 # Variables — the raw order window, used by dim_dates' date spine
 # ---------------------------------------------------------------------------
 vars:
