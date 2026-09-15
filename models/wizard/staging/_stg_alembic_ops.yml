@@ -1,0 +1,148 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__suppliers
+    description: One row per ingredient supplier for procurement analysis.
+    columns:
+      - name: supplier_id
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        description: Supplier display name.
+        data_tests: [not_null]
+      - name: region
+        description: Canonical supplier region.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Northern Reaches, Ember Coast, Silverwood, The Marshlands, Crystal Vale]
+      - name: reliability_rating
+        description: Supplier reliability rating from 1 through 5.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: contracted_since
+        description: Date the supplier contract began.
+        data_tests: [not_null]
+
+  - name: stg_alembic_ops__ingredients
+    description: One row per ingredient with normalized procurement attributes and current standard unit cost.
+    columns:
+      - name: ingredient_id
+        description: Primary key — ingredient identifier.
+        data_tests: [unique, not_null]
+      - name: ingredient_name
+        description: Ingredient display name.
+        data_tests: [not_null]
+      - name: supplier_id
+        description: Required FK to the current ingredient supplier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__suppliers')
+                field: supplier_id
+      - name: ingredient_unit
+        description: Lowercased unit in which recipe quantity and current unit cost are expressed.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: unit_cost_copper
+        description: Current standard cost for one ingredient unit, in copper pieces.
+        data_tests: [not_null]
+      - name: unit_cost_gold
+        description: Current standard cost for one ingredient unit in gold crowns, calculated as copper / 100 and rounded to two decimals.
+        data_tests: [not_null]
+      - name: is_hazardous
+        description: Whether the ingredient is hazardous after to_boolean() normalization.
+        data_tests: [not_null]
+      - name: harvest_season
+        description: Source harvest season with surrounding whitespace removed and source case preserved.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Autumn, Spring, Summer, Winter, Year-round]
+
+  - name: stg_alembic_ops__potion_ingredients
+    description: Recipe bridge at one row per potion and ingredient pair.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
+    columns:
+      - name: potion_sku
+        description: Required FK to the potion catalog and part of the composite recipe grain.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: ingredient_id
+        description: Required FK to ingredients and part of the composite recipe grain.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__ingredients')
+                field: ingredient_id
+      - name: ingredient_quantity
+        description: Number of ingredient units required per produced potion unit.
+        data_tests: [not_null]
+      - name: ingredient_unit
+        description: Lowercased recipe unit; must match the ingredient current-cost unit.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+
+  - name: stg_alembic_ops__brew_events
+    description: One row per production brew event; all source events are retained and nullable brew duration remains nullable.
+    columns:
+      - name: brew_id
+        description: Primary key — brew event identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: Required FK to the brewed potion.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: shop_id
+        description: Required FK to the shop hosting the brew.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops')
+                field: shop_id
+      - name: cauldron_id
+        description: Source cauldron identifier; no cauldron dimension exists.
+        data_tests: [not_null]
+      - name: brewed_at
+        description: Brew event timestamp parsed as timestamp_ntz.
+        data_tests: [not_null]
+      - name: batch_size
+        description: Number of potion units produced in the brew event.
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        description: Brew duration in minutes; nullable when the source did not capture duration.
+      - name: quality_check
+        description: Lowercased quality-check outcome.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewer_name
+        description: Name recorded for the brewer responsible for the event.
+        data_tests: [not_null]

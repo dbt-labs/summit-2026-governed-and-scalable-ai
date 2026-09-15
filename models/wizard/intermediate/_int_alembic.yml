@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: int_potion_supply_cost
+    description: Potion-grain standard recipe cost using current ingredient unit costs; this is an estimate, not actual procurement cost.
+    columns:
+      - name: potion_sku
+        description: Primary key — potion SKU.
+        data_tests: [unique, not_null]
+      - name: recipe_ingredient_count
+        description: Number of ingredient lines in the potion recipe.
+        data_tests: [not_null]
+      - name: standard_ingredient_cost_per_unit_copper
+        description: Estimated standard ingredient cost for one produced potion unit in copper, calculated as the sum of recipe quantity times current ingredient unit cost.
+        data_tests: [not_null]
+      - name: standard_ingredient_cost_per_unit_gold
+        description: Per-unit standard ingredient cost in gold crowns, calculated as copper / 100 and rounded to two decimals.
+        data_tests: [not_null]
+
+  - name: int_brews_with_supply_cost
+    description: Brew-grain enrichment that preserves every event and attaches current standard recipe cost; not actual historical procurement cost.
+    columns:
+      - name: brew_id
+        description: Primary key — brew event identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: Required brewed potion FK.
+        data_tests: [not_null]
+      - name: estimated_standard_ingredient_cost_copper
+        description: Estimated full-brew ingredient supply cost in copper, calculated as batch_size times per-unit standard ingredient cost.
+        data_tests: [not_null]
+      - name: estimated_standard_ingredient_cost_gold
+        description: Estimated full-brew ingredient supply cost in gold, calculated from copper / 100 and rounded to two decimals.
+        data_tests: [not_null]

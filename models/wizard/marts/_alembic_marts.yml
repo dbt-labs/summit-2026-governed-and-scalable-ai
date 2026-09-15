@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: dim_suppliers
+    description: Supplier dimension — one row per supplier for procurement analysis.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: supplier_id
+        data_type: varchar
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        data_type: varchar
+        description: Supplier display name.
+        data_tests: [not_null]
+      - name: region
+        data_type: varchar
+        description: Canonical supplier region.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Northern Reaches, Ember Coast, Silverwood, The Marshlands, Crystal Vale]
+      - name: reliability_rating
+        data_type: integer
+        description: Supplier reliability rating from 1 through 5.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: contracted_since
+        data_type: date
+        description: Date the supplier contract began.
+        data_tests: [not_null]
+
+  - name: fct_brews
+    description: Brew-event fact for production analysis; standard cost uses current ingredient prices and is an estimate rather than actual historical procurement cost.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: brew_id
+        data_type: varchar
+        description: Primary key — brew event identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        data_type: varchar
+        description: Required FK to dim_potions.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_potions')
+                field: potion_sku
+      - name: shop_id
+        data_type: varchar
+        description: Required FK to dim_shops.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_shops')
+                field: shop_id
+      - name: cauldron_id
+        data_type: varchar
+        description: Source cauldron identifier; no cauldron dimension exists.
+        data_tests: [not_null]
+      - name: brewer_name
+        data_type: varchar
+        description: Name recorded for the brewer responsible for the event.
+        data_tests: [not_null]
+      - name: quality_check
+        data_type: varchar
+        description: Lowercased quality-check outcome.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: batch_size
+        data_type: integer
+        description: Number of potion units produced in the brew event.
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        data_type: integer
+        description: Brew duration in minutes; nullable for the source's uncaptured durations.
+      - name: recipe_ingredient_count
+        data_type: integer
+        description: Number of ingredient lines in the potion's current recipe.
+        data_tests: [not_null]
+      - name: standard_ingredient_cost_per_unit_copper
+        data_type: integer
+        description: Estimated standard ingredient cost for one produced potion unit in copper, using current ingredient costs.
+        data_tests: [not_null]
+      - name: standard_ingredient_cost_per_unit_gold
+        data_type: "number(38, 2)"
+        description: Per-unit standard ingredient cost in gold, calculated as copper / 100 and rounded to two decimals.
+        data_tests: [not_null]
+      - name: estimated_standard_ingredient_cost_copper
+        data_type: integer
+        description: Estimated full-brew ingredient supply cost in copper, calculated as batch_size times per-unit standard cost.
+        data_tests: [not_null]
+      - name: estimated_standard_ingredient_cost_gold
+        data_type: "number(38, 2)"
+        description: Estimated full-brew ingredient supply cost in gold, calculated as copper / 100 and rounded to two decimals.
+        data_tests: [not_null]
+      - name: brewed_at
+        data_type: timestamp_ntz
+        description: Brew event timestamp.
+        data_tests: [not_null]
+      - name: brewed_date
+        data_type: date
+        description: Calendar date derived from brewed_at.
+        data_tests: [not_null]
