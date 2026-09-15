@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: int_potion_supply_cost
+    description: >
+      One row per potion. Standard ingredient supply cost to produce a single
+      unit, summed over the recipe (recipe quantity * current ingredient unit cost).
+    columns:
+      - name: potion_sku
+        description: Primary key — one row per potion.
+        data_tests: [unique, not_null]
+      - name: standard_supply_cost_gold
+        description: Per-unit standard ingredient supply cost in gold crowns.
+        data_tests: [not_null]

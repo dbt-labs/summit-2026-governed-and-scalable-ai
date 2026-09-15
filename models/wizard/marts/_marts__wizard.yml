@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: dim_suppliers
+    description: Supplier dimension — one row per ingredient supplier, for procurement analysis.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: supplier_id
+        data_type: varchar
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        data_type: varchar
+        description: Supplier display name.
+      - name: region
+        data_type: varchar
+        description: Supplier home region (canonical spelling).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: reliability_rating
+        data_type: integer
+        description: Supplier reliability rating, 1-5.
+        data_tests: [not_null]
+      - name: contracted_since
+        data_type: date
+        description: Date the supplier was first contracted.
+
+  - name: fct_brews
+    description: >
+      Brew-event fact — one row per production batch, with estimated standard
+      ingredient supply cost (per unit and per batch) derived from recipe
+      quantities and current ingredient unit costs.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: brew_id
+        data_type: varchar
+        description: Primary key — brew identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        data_type: varchar
+        description: FK to dim_potions (potion brewed).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_potions')
+                field: potion_sku
+      - name: shop_id
+        data_type: varchar
+        description: FK to dim_shops (shop that hosted the brew).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_shops')
+                field: shop_id
+      - name: cauldron_id
+        data_type: varchar
+        description: Cauldron identifier (not a dimension table).
+      - name: batch_size
+        data_type: integer
+        description: Number of potion units produced in the batch.
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        data_type: integer
+        description: Brew duration in minutes (nullable, ~1%).
+      - name: quality_check
+        data_type: varchar
+        description: Batch quality-check result (lowercased).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewer_name
+        data_type: varchar
+        description: Name of the brewer.
+      - name: standard_unit_supply_cost_gold
+        data_type: number(38, 2)
+        description: Per-unit standard ingredient supply cost in gold crowns (recipe standard).
+        data_tests: [not_null]
+      - name: standard_batch_supply_cost_gold
+        data_type: number(38, 2)
+        description: Standard ingredient supply cost for the whole batch (per-unit cost * batch_size), in gold crowns.
+        data_tests: [not_null]
+      - name: brewed_at
+        data_type: timestamp_ntz
+        description: Brew timestamp.
+        data_tests: [not_null]
+      - name: brewed_date
+        data_type: date
+        description: Brew date (date-truncated brewed_at).

@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__suppliers
+    description: One row per ingredient supplier. Source-facing cleanup of raw_suppliers.
+    columns:
+      - name: supplier_id
+        description: Primary key — supplier identifier (SUP-01).
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        description: Supplier display name.
+      - name: region
+        description: Supplier home region (canonical spelling).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: reliability_rating
+        description: Supplier reliability rating, 1-5.
+        data_tests: [not_null]
+      - name: contracted_since
+        description: Date the supplier was first contracted.
+
+  - name: stg_alembic_ops__ingredients
+    description: One row per ingredient, with normalized unit, hazardous flag, and gold unit cost.
+    columns:
+      - name: ingredient_id
+        description: Primary key — ingredient identifier (ING-001).
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        description: FK to stg_alembic_ops__suppliers.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__suppliers')
+                field: supplier_id
+      - name: ingredient_name
+        description: Ingredient display name.
+      - name: unit
+        description: Measurement unit (lowercased).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: is_hazardous
+        description: Whether the ingredient is hazardous.
+      - name: harvest_season
+        description: Harvest season for the ingredient.
+      - name: unit_cost_copper
+        description: Current ingredient unit cost in copper pieces.
+        data_tests: [not_null]
+      - name: unit_cost_gold
+        description: Current ingredient unit cost in gold crowns.
+
+  - name: stg_alembic_ops__potion_ingredients
+    description: Recipe bridge — one row per potion/ingredient with recipe quantity.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
+    columns:
+      - name: potion_sku
+        description: Part of composite key; FK to potions.
+        data_tests: [not_null]
+      - name: ingredient_id
+        description: Part of composite key; FK to stg_alembic_ops__ingredients.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__ingredients')
+                field: ingredient_id
+      - name: quantity
+        description: Recipe quantity of the ingredient, in the ingredient's unit.
+        data_tests: [not_null]
+      - name: unit
+        description: Recipe measurement unit (lowercased); matches the ingredient's unit.
+
+  - name: stg_alembic_ops__brew_events
+    description: One row per brew event, with normalized quality_check and casted timestamps.
+    columns:
+      - name: brew_id
+        description: Primary key — brew identifier (BRW-00001).
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to potions.
+        data_tests: [not_null]
+      - name: shop_id
+        description: FK to shops.
+        data_tests: [not_null]
+      - name: cauldron_id
+        description: Cauldron identifier (not a dimension table).
+      - name: quality_check
+        description: Batch quality-check result (lowercased).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: brewer_name
+        description: Name of the brewer.
+      - name: batch_size
+        description: Number of potion units produced in the batch.
+        data_tests: [not_null]
+      - name: brew_duration_minutes
+        description: Brew duration in minutes (nullable, ~1%).
+      - name: brewed_at
+        description: Brew timestamp.
+      - name: brewed_date
+        description: Brew date (date-truncated brewed_at).

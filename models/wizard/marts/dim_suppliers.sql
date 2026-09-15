@@ -1,0 +1,17 @@
+-- Supplier dimension — one row per ingredient supplier, for procurement analysis.
+
+with suppliers as (
+    select * from {{ ref('stg_alembic_ops__suppliers') }}
+),
+
+final as (
+    select
+        supplier_id::varchar as supplier_id,
+        supplier_name::varchar as supplier_name,
+        region::varchar as region,
+        reliability_rating::integer as reliability_rating,
+        contracted_since::date as contracted_since
+    from suppliers
+)
+
+select * from final
