@@ -1,0 +1,960 @@
+version: 2
+
+# Governed source-to-mart build spec for the Alembic Ops procurement /
+# supply-cost vertical (Wizard track). Drafted by planning-governed-source-to-mart.
+# Do not implement models from this file until plan.status is "approved".
+plan:
+  name: alembic_procurement_supply_cost_wizard
+  status: approved
+  owner: requesting user (approved via chat in this session)
+  approval:
+    approved_by: requesting user (approved via chat in this session)
+    evidence: "Chat approval: d1 = scale recipe_cost_gold by batch_size for batch_supply_cost_gold; d2 = defer semantic layer scope."
+  pre_approval_validation:
+    status: passed
+    checked_at: "2025 planning session (this conversation)"
+    checked_by: planning-governed-source-to-mart
+    checks:
+      source_and_ref_columns_resolve: passed
+      output_origins_match_transformations: passed
+      tests_match_post_transformation_data: passed
+      properties_and_contracts_match_outputs: passed
+      lineage_grain_and_joins_are_coherent: passed
+      formulas_and_acceptance_checks_reconcile: passed
+      build_selector_covers_planned_models: passed
+    findings:
+      - "source_and_ref_columns_resolve: all four alembic_ops raw tables (raw_suppliers, raw_ingredients, raw_potion_ingredients, raw_brew_events) are already declared in models/staging/alembic_ops/_alembic_ops__sources.yml; no new source declarations needed."
+      - "output_origins_match_transformations: every staging rename/cast/macro call and every intermediate/mart derivation below is grounded in a profiled raw column; no invented columns."
+      - "tests_match_post_transformation_data: accepted_values lists for region, unit, quality_check, harvest_season were built from `select distinct <col>` after applying the planned lower(trim()) normalization against raw.dbt_jstayton tables."
+      - "lineage_grain_and_joins_are_coherent: profiled raw_suppliers (15 rows, unique supplier_id), raw_ingredients (80 rows, unique ingredient_id, supplier_id always populated and resolves), raw_potion_ingredients (406 rows, composite (potion_sku, ingredient_id) unique, no nulls), raw_brew_events (large volume in this warehouse, unique brew_id, potion_sku/shop_id never null). Confirmed all 120 potions have a recipe and all 120 potions appear in raw_brew_events, so the int_potion_supply_cost -> int_brews_with_supply_cost join is a full match (left join kept for safety, not because unmatched rows were observed)."
+      - "formulas_and_acceptance_checks_reconcile: recipe/ingredient unit values match exactly after lower(trim()) normalization for every (ingredient_id, potion_sku) pair profiled (zero mismatches), so no unit-conversion logic is required for the cost formula. Decision d1 approved batch_supply_cost_gold = recipe_cost_gold * batch_size."
+      - "build_selector_covers_planned_models: '+dim_suppliers +fct_brews' was traced against the declared inputs below and reaches all 8 planned models with no other project model sharing those two terminal names."
+    unresolved: []
+  target:
+    track: wizard
+    root_path: models/wizard/
+
+request:
+  business_outcome: >
+    Build the governed Alembic Ops procurement/supply-cost vertical end to end
+    under models/wizard/ — the one source-to-mart slice the reference project
+    deliberately leaves unbuilt (per README.md and models/wizard/README.md) —
+    so brew-level supply cost and supplier reference data are available as
+    trusted, contracted marts alongside the existing potion/order/customer
+    marts.
+  requested_products:
+    - dim_suppliers
+    - fct_brews
+  intended_consumers:
+    - "BI / dashboard authors reporting on brew production and supply cost"
+    - "AI-assisted analysis over governed marts"
+    - "Semantic Layer, only if decision d2 approves an extension"
+  out_of_scope:
+    - "Any edit to models/staging/, models/intermediate/, or models/marts/ (completed starter-state models)"
+    - "Any edit to models/warlock/ or models/answer_key/"
+    - "New Semantic Layer metrics/dimensions, unless decision d2 approves specific ones"
+    - "Supplier-reliability-weighted or seasonally-adjusted cost variants"
+    - "Unit conversion between ingredient and recipe measurement units — evidence shows they already match after normalization, so no conversion table/logic is needed"
+
+authority:
+  project_conventions:
+    - AGENTS.md
+    - docs/merlinco/STYLE_GUIDE.md
+    - dbt_project.yml
+  source_structure:
+    - models/staging/alembic_ops/_alembic_ops__sources.yml
+    - docs/merlinco/DATA_DICTIONARY.md
+    - docs/merlinco/ERD.md
+  target_requirements:
+    - models/wizard/README.md
+    - README.md (Downstream models / Kimball table: lab scope is suppliers, ingredients, potion_ingredients, brew_events staging; int_potion_supply_cost, int_brews_with_supply_cost intermediate; dim_suppliers mart; fct_brews mart)
+  implementation_patterns:
+    - models/staging/alembic_ops/stg_alembic_ops__shops.sql
+    - models/staging/abra_pos/stg_abra_pos__orders.sql
+    - models/intermediate/int_orders_with_payments.sql
+    - models/marts/fct_orders.sql
+    - models/marts/dim_shops.sql
+    - macros/to_boolean.sql
+    - macros/copper_to_gold.sql
+  semantic_definitions:
+    - models/marts/_marts.yml (semantic_model / metrics blocks on fct_orders, fct_order_items)
+    - models/marts/metrics.yml
+    - models/marts/_semantic_models.yml
+
+evidence:
+  sources:
+    - relation: raw.dbt_jstayton.raw_suppliers
+      established:
+        grain: one row per supplier
+        primary_key: [supplier_id]
+        important_findings:
+          - "15 rows, 15 distinct supplier_id, zero nulls in supplier_id/region/reliability_rating."
+          - "region values are exactly the 5 canonical shop regions (Northern Reaches, Ember Coast, Silverwood, The Marshlands, Crystal Vale) — no conform_region() needed."
+          - "contracted_since has zero nulls."
+    - relation: raw.dbt_jstayton.raw_ingredients
+      established:
+        grain: one row per ingredient
+        primary_key: [ingredient_id]
+        important_findings:
+          - "80 rows, 80 distinct ingredient_id, supplier_id always populated and always resolves to a raw_suppliers row."
+          - "unit is mixed-case across 6 canonical values (bundle, dram, gram, pinch, sprig, vial); lower(trim()) normalizes cleanly."
+          - "is_hazardous uses the same messy-boolean encoding as raw_potions.is_regulated (Y/N/yes/no/TRUE/FALSE), all recognized by to_boolean()."
+          - "unit_cost_copper ranges 4-219 (copper), always populated."
+          - "harvest_season has 5 distinct values (Autumn, Spring, Summer, Winter, Year-round), consistent casing, no quirk flagged in DATA_DICTIONARY.md."
+    - relation: raw.dbt_jstayton.raw_potion_ingredients
+      established:
+        grain: one row per potion-ingredient recipe line (composite key)
+        primary_key: [potion_sku, ingredient_id]
+        important_findings:
+          - "406 rows, 406 distinct (potion_sku, ingredient_id) pairs, zero nulls in either key column — confirms the documented composite natural key."
+          - "unit is mixed-case across the same 6 values as raw_ingredients.unit."
+          - "Joining to raw_ingredients on ingredient_id and comparing lower(trim(unit)) on both sides produced zero mismatches across all 406 lines — recipe and ingredient units are the same measurement system per ingredient."
+          - "All 120 raw_potions rows have at least one recipe line (distinct potion_sku count in this table = 120 = total potions)."
+    - relation: raw.dbt_jstayton.raw_brew_events
+      established:
+        grain: one row per brew batch
+        primary_key: [brew_id]
+        important_findings:
+          - "Unique brew_id for every row; potion_sku and shop_id are never null; brew_duration_minutes is null on a small fraction of rows (consistent with the documented ~1% quirk) — not used in this build, so left null-tolerant."
+          - "quality_check has exactly two values after lower(trim()): pass, fail."
+          - "brewed_at carries the same dual timestamp format (ISO-Z and space-separated) as other *_at columns project-wide."
+          - "batch_size is numeric, observed range 25-250 across profiled rows."
+          - "cauldron_id has 20 distinct values (CDR-01 .. CDR-20); ERD explicitly notes this is not a dimension table, so it is carried as a plain attribute, not a modeled FK."
+          - "All 120 potion_sku values appearing in raw_brew_events are also present in raw_potion_ingredients, so every brew has a resolvable recipe cost."
+  existing_patterns:
+    - path: models/staging/alembic_ops/stg_alembic_ops__shops.sql
+      established:
+        - "Staging CTE shape: source -> renamed -> select * from renamed; no `final`/import-transform split needed for a table with no derived columns."
+    - path: models/intermediate/int_orders_with_payments.sql
+      established:
+        - "Child-grain rollups (payments, order_items) are aggregated to the parent grain in their own CTE before the final left join; every joined measure is coalesce()-guarded."
+    - path: models/marts/fct_orders.sql
+      established:
+        - "Marts select from exactly one upstream ref, cast every column explicitly in the final CTE, and derive simple date truncations (e.g. ordered_date from ordered_at) directly in the mart rather than upstream."
+    - path: models/marts/dim_shops.sql
+      established:
+        - "Simple dimensions with no derived columns still enforce a contract and cast every column explicitly."
+  data_profiles:
+    - subject: raw_ingredients.unit vs raw_potion_ingredients.unit (per ingredient_id, after lower/trim)
+      established: "Zero mismatches across all 406 joined recipe lines — units already align, no conversion logic required."
+      evidence_type: warehouse query (join + having clause)
+    - subject: raw_brew_events.quality_check distinct values after lower(trim())
+      established: "['pass', 'fail']"
+      evidence_type: warehouse query
+    - subject: raw_ingredients.unit / raw_potion_ingredients.unit distinct values after lower(trim())
+      established: "['bundle', 'dram', 'gram', 'pinch', 'sprig', 'vial']"
+      evidence_type: warehouse query
+    - subject: raw_suppliers.region distinct values
+      established: "['Crystal Vale', 'Ember Coast', 'Northern Reaches', 'Silverwood', 'The Marshlands'] — identical set to dim_shops.region"
+      evidence_type: warehouse query
+
+decisions:
+  - id: d1
+    question: >
+      int_potion_supply_cost defines recipe_cost_gold per potion as
+      sum(recipe_line.quantity * ingredient.unit_cost_gold) across that
+      potion's recipe lines (units already align — see evidence). fct_brews
+      then scales this to a batch_supply_cost_gold via
+      recipe_cost_gold * batch_size. Is this the intended definition of
+      "supply cost," and is per-unit-scaled-by-batch-size the correct
+      batch-level cost, or should cost be computed a different way (e.g.
+      supplier-reliability-weighted, a fixed per-batch ingredient draw
+      independent of batch_size, or something else)?
+    evidence:
+      - "raw_potion_ingredients quantity is documented as the recipe for one potion (docs/merlinco/DATA_DICTIONARY.md: 'maps each potion to 2-5 ingredients')."
+      - "raw_brew_events.batch_size is documented as a batch-level production quantity with no other cost-relevant column on the brew event."
+      - "No existing mart, metric, or documentation defines 'supply cost' today — this would be a new governed business number."
+    options:
+      - id: recipe_cost_times_batch_size
+        implication: "Straightforward, uses only columns already profiled; assumes recipe quantities are per single potion unit and batch_size is a count of potion units — matches the natural reading of both columns but has not been confirmed by a business owner."
+      - id: fixed_per_batch_cost
+        implication: "Would treat recipe_cost_gold as the full batch cost regardless of batch_size (i.e. drop the batch_size multiplier) — plausible if a 'batch' always uses one fixed ingredient draw, but no evidence supports this reading over the per-unit interpretation."
+    owner: requesting user
+    status: approved
+    approved_value: recipe_cost_times_batch_size
+    rationale: "Approved via chat: batch_supply_cost_gold = recipe_cost_gold * batch_size, matching the natural reading that recipe quantities are per single potion unit and batch_size counts potion units produced."
+
+  - id: d2
+    question: >
+      Should this build extend the Semantic Layer (models/marts/_marts.yml
+      semantic_model blocks, models/marts/metrics.yml) with new supply-cost
+      metrics/dimensions on fct_brews, or should semantic scope be deferred
+      entirely for this slice?
+    evidence:
+      - "STYLE_GUIDE.md: 'Any Alembic semantic extension must be based on the validated Wizard mart and approved cost, unit, time, and null semantics' — implies semantic work is conditional and separate from the mart build."
+      - "No existing metric or semantic model references brews, suppliers, or ingredients today."
+    options:
+      - id: defer_semantic_scope
+        implication: "fct_brews and dim_suppliers ship as governed marts only; a future authoring-governed-metrics pass can add supply-cost metrics once this build's cost semantics are approved and validated."
+      - id: extend_now
+        implication: "Adds semantic_model/metrics blocks in the same change — requires naming the exact metrics (e.g. total_supply_cost, avg_batch_supply_cost) and their aggregation/time-dimension behavior now, which depends on d1 being resolved first."
+    owner: requesting user
+    status: approved
+    approved_value: defer_semantic_scope
+    rationale: "Approved via chat: ship dim_suppliers and fct_brews as marts only; defer any supply-cost metric/dimension work to a later authoring-governed-metrics pass."
+
+
+models:
+  - name: stg_alembic_ops__suppliers
+    layer: staging
+    path: models/wizard/staging/stg_alembic_ops__suppliers.sql
+    properties_path: models/wizard/staging/_stg_alembic_ops.yml
+    materialized: view
+    description_requirement: "One row per ingredient supplier (15 suppliers)."
+
+    grain:
+      description: one row per supplier
+      key: [supplier_id]
+
+    inputs:
+      - source:
+          name: alembic_ops
+          table: raw_suppliers
+
+    implementation:
+      cte_shape: [source, renamed]
+      joins: forbidden
+      transformations:
+        - "supplier_name, region: pass through as-is (region already canonical — see evidence)."
+        - "reliability_rating::integer"
+        - "contracted_since::date"
+
+    output_columns:
+      - name: supplier_id
+        logical_type: varchar
+        source: alembic_ops.raw_suppliers.supplier_id
+      - name: supplier_name
+        logical_type: varchar
+        source: alembic_ops.raw_suppliers.supplier_name
+      - name: region
+        logical_type: varchar
+        source: alembic_ops.raw_suppliers.region
+      - name: reliability_rating
+        logical_type: integer
+        derived_from: "reliability_rating::integer"
+      - name: contracted_since
+        logical_type: date
+        derived_from: "contracted_since::date"
+
+    properties:
+      description: "One row per ingredient supplier (15 suppliers)."
+      model_data_tests: []
+      columns:
+        - name: supplier_id
+          description: "Primary key — supplier identifier (SUP-01)."
+          data_tests: [unique, not_null]
+        - name: supplier_name
+          description: "Supplier display name."
+          data_tests: [not_null]
+        - name: region
+          description: "Supplier region (already canonical spelling)."
+          data_tests:
+            - not_null
+            - accepted_values:
+                arguments:
+                  values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+        - name: reliability_rating
+          description: "Supplier reliability rating, 1-5."
+          data_tests: [not_null]
+        - name: contracted_since
+          description: "Date the supplier contract began."
+          data_tests: [not_null]
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('stg_alembic_ops__suppliers') }} equals 15."
+      - "select count(*) from {{ ref('stg_alembic_ops__suppliers') }} where region not in the 5 canonical values equals 0."
+
+  - name: stg_alembic_ops__ingredients
+    layer: staging
+    path: models/wizard/staging/stg_alembic_ops__ingredients.sql
+    properties_path: models/wizard/staging/_stg_alembic_ops.yml
+    materialized: view
+    description_requirement: "One row per ingredient (80 ingredients), each sourced from one supplier."
+
+    grain:
+      description: one row per ingredient
+      key: [ingredient_id]
+
+    inputs:
+      - source:
+          name: alembic_ops
+          table: raw_ingredients
+
+    implementation:
+      cte_shape: [source, renamed]
+      joins: forbidden
+      transformations:
+        - "ingredient_name, harvest_season: pass through as-is (no messy-case quirk documented or observed)."
+        - "unit: lower(trim(unit))"
+        - "unit_cost_copper::int"
+        - "unit_cost_gold: copper_to_gold(unit_cost_copper)"
+        - "is_hazardous: to_boolean(is_hazardous)"
+
+    output_columns:
+      - name: ingredient_id
+        logical_type: varchar
+        source: alembic_ops.raw_ingredients.ingredient_id
+      - name: ingredient_name
+        logical_type: varchar
+        source: alembic_ops.raw_ingredients.ingredient_name
+      - name: supplier_id
+        logical_type: varchar
+        source: alembic_ops.raw_ingredients.supplier_id
+      - name: unit
+        logical_type: varchar
+        derived_from: "lower(trim(unit))"
+      - name: unit_cost_copper
+        logical_type: integer
+        derived_from: "unit_cost_copper::int"
+      - name: unit_cost_gold
+        logical_type: number(38,2)
+        derived_from: "copper_to_gold(unit_cost_copper)"
+      - name: is_hazardous
+        logical_type: boolean
+        derived_from: "to_boolean(is_hazardous)"
+      - name: harvest_season
+        logical_type: varchar
+        source: alembic_ops.raw_ingredients.harvest_season
+
+    properties:
+      description: "One row per ingredient (80 ingredients), each sourced from one supplier. Unit lowercased, messy is_hazardous boolean normalized, copper cost exposed in gold alongside the raw copper integer."
+      model_data_tests: []
+      columns:
+        - name: ingredient_id
+          description: "Primary key — ingredient identifier (ING-001)."
+          data_tests: [unique, not_null]
+        - name: ingredient_name
+          description: "Ingredient display name."
+          data_tests: [not_null]
+        - name: supplier_id
+          description: "FK to the supplying supplier."
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('stg_alembic_ops__suppliers')
+                  field: supplier_id
+        - name: unit
+          description: "Unit of measure, lowercased."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: [bundle, dram, gram, pinch, sprig, vial]
+        - name: unit_cost_copper
+          description: "Cost per unit, in copper pieces."
+          data_tests: [not_null]
+        - name: unit_cost_gold
+          description: "Cost per unit, in gold crowns (copper / 100)."
+          data_tests: [not_null]
+        - name: is_hazardous
+          description: "Whether the ingredient requires hazardous handling."
+          data_tests: [not_null]
+        - name: harvest_season
+          description: "Season the ingredient is harvested."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: [Autumn, Spring, Summer, Winter, Year-round]
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('stg_alembic_ops__ingredients') }} equals 80."
+      - "select count(*) from {{ ref('stg_alembic_ops__ingredients') }} where unit not in ('bundle','dram','gram','pinch','sprig','vial') equals 0."
+
+  - name: stg_alembic_ops__potion_ingredients
+    layer: staging
+    path: models/wizard/staging/stg_alembic_ops__potion_ingredients.sql
+    properties_path: models/wizard/staging/_stg_alembic_ops.yml
+    materialized: view
+    description_requirement: "Recipe bridge — one row per potion/ingredient recipe line (406 lines). Composite key (potion_sku, ingredient_id)."
+
+    grain:
+      description: one row per potion-ingredient recipe line
+      key: [potion_sku, ingredient_id]
+
+    inputs:
+      - source:
+          name: alembic_ops
+          table: raw_potion_ingredients
+
+    implementation:
+      cte_shape: [source, renamed]
+      joins: forbidden
+      transformations:
+        - "unit: lower(trim(unit))"
+        - "quantity::integer"
+
+    output_columns:
+      - name: potion_sku
+        logical_type: varchar
+        source: alembic_ops.raw_potion_ingredients.potion_sku
+      - name: ingredient_id
+        logical_type: varchar
+        source: alembic_ops.raw_potion_ingredients.ingredient_id
+      - name: quantity
+        logical_type: integer
+        derived_from: "quantity::integer"
+      - name: unit
+        logical_type: varchar
+        derived_from: "lower(trim(unit))"
+
+    properties:
+      description: "Recipe bridge — one row per potion/ingredient recipe line (406 lines). Composite natural key (potion_sku, ingredient_id); unit lowercased and confirmed to match the corresponding ingredient's unit."
+      model_data_tests:
+        - dbt_utils.unique_combination_of_columns:
+            arguments:
+              combination_of_columns: [potion_sku, ingredient_id]
+      columns:
+        - name: potion_sku
+          description: "FK to the potion this recipe line belongs to."
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('stg_abra_pos__potions')
+                  field: potion_sku
+        - name: ingredient_id
+          description: "FK to the ingredient used in this recipe line."
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('stg_alembic_ops__ingredients')
+                  field: ingredient_id
+        - name: quantity
+          description: "Quantity of this ingredient required per potion, in the ingredient's unit."
+          data_tests: [not_null]
+        - name: unit
+          description: "Unit of measure, lowercased; matches the recipe ingredient's unit."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: [bundle, dram, gram, pinch, sprig, vial]
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('stg_alembic_ops__potion_ingredients') }} equals 406."
+      - "select count(*) from (select potion_sku, ingredient_id, count(*) from {{ ref('stg_alembic_ops__potion_ingredients') }} group by 1,2 having count(*) > 1) equals 0."
+
+  - name: stg_alembic_ops__brew_events
+    layer: staging
+    path: models/wizard/staging/stg_alembic_ops__brew_events.sql
+    properties_path: models/wizard/staging/_stg_alembic_ops.yml
+    materialized: view
+    description_requirement: "One row per production batch (brew event)."
+
+    grain:
+      description: one row per brew batch
+      key: [brew_id]
+
+    inputs:
+      - source:
+          name: alembic_ops
+          table: raw_brew_events
+
+    implementation:
+      cte_shape: [source, renamed]
+      joins: forbidden
+      transformations:
+        - "brewed_at::timestamp_ntz (dual raw format, same pattern as other *_at columns)"
+        - "quality_check: lower(trim(quality_check))"
+        - "batch_size::integer"
+        - "brew_duration_minutes::integer (nullable, ~1% null — passed through null)"
+        - "cauldron_id, brewer_name, potion_sku, shop_id: pass through as-is"
+
+    output_columns:
+      - name: brew_id
+        logical_type: varchar
+        source: alembic_ops.raw_brew_events.brew_id
+      - name: potion_sku
+        logical_type: varchar
+        source: alembic_ops.raw_brew_events.potion_sku
+      - name: shop_id
+        logical_type: varchar
+        source: alembic_ops.raw_brew_events.shop_id
+      - name: cauldron_id
+        logical_type: varchar
+        source: alembic_ops.raw_brew_events.cauldron_id
+      - name: brewed_at
+        logical_type: timestamp_ntz
+        derived_from: "brewed_at::timestamp_ntz"
+      - name: batch_size
+        logical_type: integer
+        derived_from: "batch_size::integer"
+      - name: brew_duration_minutes
+        logical_type: integer
+        derived_from: "brew_duration_minutes::integer"
+      - name: quality_check
+        logical_type: varchar
+        derived_from: "lower(trim(quality_check))"
+      - name: brewer_name
+        logical_type: varchar
+        source: alembic_ops.raw_brew_events.brewer_name
+
+    properties:
+      description: "One row per production batch. quality_check lowercased, brewed_at parsed from dual raw formats. cauldron_id is a plain attribute, not a dimension (per ERD)."
+      model_data_tests: []
+      columns:
+        - name: brew_id
+          description: "Primary key — brew identifier (BRW-00001)."
+          data_tests: [unique, not_null]
+        - name: potion_sku
+          description: "FK to the potion brewed."
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('stg_abra_pos__potions')
+                  field: potion_sku
+        - name: shop_id
+          description: "FK to the fulfilling shop."
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('stg_alembic_ops__shops')
+                  field: shop_id
+        - name: cauldron_id
+          description: "Cauldron used for this batch — a plain attribute, not a dimension."
+          data_tests: [not_null]
+        - name: brewed_at
+          description: "Brew timestamp (TIMESTAMP_NTZ), parsed from dual raw formats."
+          data_tests: [not_null]
+        - name: batch_size
+          description: "Number of potion units produced in this batch."
+          data_tests: [not_null]
+        - name: brew_duration_minutes
+          description: "Brew duration in minutes (~1% null)."
+        - name: quality_check
+          description: "Quality check result, lowercased."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: [pass, fail]
+        - name: brewer_name
+          description: "Name of the brewer who ran this batch."
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('stg_alembic_ops__brew_events') }} equals the source row count (no filtering/fanout)."
+      - "select count(*) from {{ ref('stg_alembic_ops__brew_events') }} where quality_check not in ('pass','fail') equals 0."
+
+  - name: int_potion_supply_cost
+    layer: intermediate
+    path: models/wizard/intermediate/int_potion_supply_cost.sql
+    properties_path: models/wizard/intermediate/_int.yml
+    materialized: ephemeral
+    description_requirement: "Per-potion recipe cost — one row per potion with a recipe, summing quantity * ingredient unit cost across its recipe lines."
+
+    grain:
+      description: one row per potion (of the 120 potions that have a recipe)
+      key: [potion_sku]
+
+    inputs:
+      - ref: stg_alembic_ops__potion_ingredients
+      - ref: stg_alembic_ops__ingredients
+
+    implementation:
+      cte_shape: [potion_ingredients, ingredients, recipe_lines, final]
+      joins: required
+      transformations:
+        - "recipe_lines: join potion_ingredients to ingredients on ingredient_id; per-line cost = potion_ingredients.quantity * ingredients.unit_cost_gold (units already confirmed to match — see evidence)."
+        - "final: group recipe_lines by potion_sku; recipe_cost_gold = sum(line cost); ingredient_count = count(*)."
+      join_contracts:
+        - left_input: potion_ingredients
+          right_input: ingredients
+          condition: potion_ingredients.ingredient_id = ingredients.ingredient_id
+          cardinality: many-to-one
+          join_type: left
+          record_retention: "preserve every recipe line even if a future ingredient_id fails to resolve (none observed today)."
+          fanout_control: "join key (ingredient_id) is unique on the ingredients side, so no fanout is possible."
+      aggregation:
+        input_grain: one row per recipe line (potion_sku, ingredient_id)
+        output_grain: one row per potion_sku
+        group_by: [potion_sku]
+        measures:
+          - name: recipe_cost_gold
+            rule: "sum(potion_ingredients.quantity * coalesce(ingredients.unit_cost_gold, 0))"
+          - name: ingredient_count
+            rule: "count(*)"
+
+    output_columns:
+      - name: potion_sku
+        logical_type: varchar
+        source: stg_alembic_ops__potion_ingredients.potion_sku
+      - name: ingredient_count
+        logical_type: integer
+        derived_from: "count(*) grouped by potion_sku"
+      - name: recipe_cost_gold
+        logical_type: number(38,2)
+        derived_from: "sum(quantity * unit_cost_gold) grouped by potion_sku"
+
+    properties:
+      description: "Per-potion recipe cost (120 potions) — sum of quantity * ingredient unit cost across each potion's recipe lines."
+      model_data_tests: []
+      columns:
+        - name: potion_sku
+          description: "Primary key — one row per potion with a recipe."
+          data_tests: [unique, not_null]
+        - name: recipe_cost_gold
+          description: "Cost to produce one unit of this potion, in gold crowns, summed across its recipe's ingredients."
+          data_tests: [not_null]
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('int_potion_supply_cost') }} equals 120."
+      - "select count(*) from {{ ref('int_potion_supply_cost') }} where recipe_cost_gold <= 0 equals 0."
+
+  - name: int_brews_with_supply_cost
+    layer: intermediate
+    path: models/wizard/intermediate/int_brews_with_supply_cost.sql
+    properties_path: models/wizard/intermediate/_int.yml
+    materialized: ephemeral
+    description_requirement: "Brew grain enriched with per-unit and batch-level supply cost and a quality-pass flag. One row per brew."
+
+    grain:
+      description: one row per brew batch
+      key: [brew_id]
+
+    inputs:
+      - ref: stg_alembic_ops__brew_events
+      - ref: int_potion_supply_cost
+
+    implementation:
+      cte_shape: [brews, supply_cost, final]
+      joins: required
+      transformations:
+        - "final: left join brews to supply_cost on potion_sku; recipe_cost_gold coalesced to 0 if unmatched (none observed today); batch_supply_cost_gold = recipe_cost_gold * batch_size; is_quality_pass = (quality_check = 'pass')."
+      join_contracts:
+        - left_input: brews
+          right_input: supply_cost
+          condition: brews.potion_sku = supply_cost.potion_sku
+          cardinality: many-to-one
+          join_type: left
+          record_retention: "preserve every brew event even if its potion has no recipe cost (none observed today — all 120 brewed potion_sku values resolve)."
+          fanout_control: "join key (potion_sku) is unique on the supply_cost side (int_potion_supply_cost grain), so no fanout is possible."
+
+    output_columns:
+      - name: brew_id
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.brew_id
+      - name: potion_sku
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.potion_sku
+      - name: shop_id
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.shop_id
+      - name: cauldron_id
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.cauldron_id
+      - name: brewed_at
+        logical_type: timestamp_ntz
+        source: stg_alembic_ops__brew_events.brewed_at
+      - name: batch_size
+        logical_type: integer
+        source: stg_alembic_ops__brew_events.batch_size
+      - name: brew_duration_minutes
+        logical_type: integer
+        source: stg_alembic_ops__brew_events.brew_duration_minutes
+      - name: quality_check
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.quality_check
+      - name: is_quality_pass
+        logical_type: boolean
+        derived_from: "quality_check = 'pass'"
+      - name: brewer_name
+        logical_type: varchar
+        source: stg_alembic_ops__brew_events.brewer_name
+      - name: recipe_cost_gold
+        logical_type: number(38,2)
+        derived_from: "coalesce(int_potion_supply_cost.recipe_cost_gold, 0)"
+      - name: batch_supply_cost_gold
+        logical_type: number(38,2)
+        derived_from: "coalesce(int_potion_supply_cost.recipe_cost_gold, 0) * batch_size — formula approved via decision d1"
+
+
+    properties:
+      description: "Brew grain enriched with per-unit recipe cost, batch-scaled supply cost, and a quality-pass flag."
+      model_data_tests: []
+      columns:
+        - name: brew_id
+          description: "Primary key — brew identifier."
+          data_tests: [unique, not_null]
+        - name: batch_supply_cost_gold
+          description: "recipe_cost_gold * batch_size — formula approved via decision d1."
+
+          data_tests: [not_null]
+        - name: is_quality_pass
+          description: "True when quality_check = 'pass'."
+          data_tests: [not_null]
+
+    contract:
+      enforced: false
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('int_brews_with_supply_cost') }} equals the row count of stg_alembic_ops__brew_events (no fanout from the left join)."
+      - "select count(*) from {{ ref('int_brews_with_supply_cost') }} where recipe_cost_gold is null equals 0."
+
+  - name: dim_suppliers
+    layer: marts
+    path: models/wizard/marts/dim_suppliers.sql
+    properties_path: models/wizard/marts/_marts.yml
+    materialized: table
+    description_requirement: "Supplier dimension — one row per supplier (15 suppliers)."
+
+    grain:
+      description: one row per supplier
+      key: [supplier_id]
+
+    inputs:
+      - ref: stg_alembic_ops__suppliers
+
+    implementation:
+      cte_shape: [suppliers, final]
+      joins: forbidden
+      transformations:
+        - "explicit contract casts only, matching stg_alembic_ops__suppliers columns 1:1"
+
+    output_columns:
+      - name: supplier_id
+        logical_type: varchar
+        source: stg_alembic_ops__suppliers.supplier_id
+      - name: supplier_name
+        logical_type: varchar
+        source: stg_alembic_ops__suppliers.supplier_name
+      - name: region
+        logical_type: varchar
+        source: stg_alembic_ops__suppliers.region
+      - name: reliability_rating
+        logical_type: integer
+        source: stg_alembic_ops__suppliers.reliability_rating
+      - name: contracted_since
+        logical_type: date
+        source: stg_alembic_ops__suppliers.contracted_since
+
+    properties:
+      description: "Supplier dimension — one row per supplier (15 suppliers)."
+      model_data_tests: []
+      columns:
+        - name: supplier_id
+          data_type: varchar
+          description: "Primary key — supplier identifier."
+          data_tests: [unique, not_null]
+        - name: supplier_name
+          data_type: varchar
+          description: "Supplier display name."
+        - name: region
+          data_type: varchar
+          description: "Supplier region (canonical spelling)."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+        - name: reliability_rating
+          data_type: integer
+          description: "Reliability rating, 1-5."
+        - name: contracted_since
+          data_type: date
+          description: "Date the supplier contract began."
+
+    contract:
+      enforced: true
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('dim_suppliers') }} equals 15."
+
+  - name: fct_brews
+    layer: marts
+    path: models/wizard/marts/fct_brews.sql
+    properties_path: models/wizard/marts/_marts.yml
+    materialized: table
+    description_requirement: "Brew-grain fact — one row per production batch, with quality and supply-cost measures and conformed potion/shop FKs."
+
+    grain:
+      description: one row per brew batch
+      key: [brew_id]
+
+    inputs:
+      - ref: int_brews_with_supply_cost
+
+    implementation:
+      cte_shape: [brews, final]
+      joins: forbidden
+      transformations:
+        - "explicit contract casts on every int_brews_with_supply_cost column"
+        - "brewed_date: brewed_at::date (derived directly in the mart, matching the fct_orders / ordered_date pattern)"
+
+    output_columns:
+      - name: brew_id
+        logical_type: varchar
+        source: int_brews_with_supply_cost.brew_id
+      - name: potion_sku
+        logical_type: varchar
+        source: int_brews_with_supply_cost.potion_sku
+      - name: shop_id
+        logical_type: varchar
+        source: int_brews_with_supply_cost.shop_id
+      - name: cauldron_id
+        logical_type: varchar
+        source: int_brews_with_supply_cost.cauldron_id
+      - name: quality_check
+        logical_type: varchar
+        source: int_brews_with_supply_cost.quality_check
+      - name: is_quality_pass
+        logical_type: boolean
+        source: int_brews_with_supply_cost.is_quality_pass
+      - name: batch_size
+        logical_type: integer
+        source: int_brews_with_supply_cost.batch_size
+      - name: brew_duration_minutes
+        logical_type: integer
+        source: int_brews_with_supply_cost.brew_duration_minutes
+      - name: recipe_cost_gold
+        logical_type: number(38,2)
+        source: int_brews_with_supply_cost.recipe_cost_gold
+      - name: batch_supply_cost_gold
+        logical_type: number(38,2)
+        source: int_brews_with_supply_cost.batch_supply_cost_gold
+      - name: brewer_name
+        logical_type: varchar
+        source: int_brews_with_supply_cost.brewer_name
+      - name: brewed_at
+        logical_type: timestamp_ntz
+        source: int_brews_with_supply_cost.brewed_at
+      - name: brewed_date
+        logical_type: date
+        derived_from: "brewed_at::date"
+
+    properties:
+      description: "Brew-grain fact — one row per production batch, with quality and supply-cost measures and conformed potion/shop FKs."
+      model_data_tests: []
+      columns:
+        - name: brew_id
+          data_type: varchar
+          description: "Primary key — brew identifier."
+          data_tests: [unique, not_null]
+        - name: potion_sku
+          data_type: varchar
+          description: "FK to dim_potions."
+          data_tests:
+            - relationships:
+                arguments:
+                  to: ref('dim_potions')
+                  field: potion_sku
+        - name: shop_id
+          data_type: varchar
+          description: "FK to dim_shops."
+          data_tests:
+            - relationships:
+                arguments:
+                  to: ref('dim_shops')
+                  field: shop_id
+        - name: cauldron_id
+          data_type: varchar
+          description: "Cauldron used for this batch — a plain attribute, not a dimension."
+          data_tests: [not_null]
+        - name: quality_check
+          data_type: varchar
+          description: "Quality check result, lowercased."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: [pass, fail]
+        - name: is_quality_pass
+          data_type: boolean
+          description: "True when quality_check = 'pass'."
+          data_tests: [not_null]
+        - name: batch_size
+          data_type: integer
+          description: "Number of potion units produced in this batch."
+          data_tests: [not_null]
+        - name: brew_duration_minutes
+          data_type: integer
+          description: "Brew duration in minutes (nullable, ~1% null)."
+        - name: recipe_cost_gold
+          data_type: number(38, 2)
+          description: "Cost to produce one unit of the brewed potion, in gold crowns."
+          data_tests: [not_null]
+        - name: batch_supply_cost_gold
+          data_type: number(38, 2)
+          description: "recipe_cost_gold * batch_size, in gold crowns — formula approved via decision d1."
+          data_tests: [not_null]
+        - name: brewer_name
+          data_type: varchar
+          description: "Name of the brewer who ran this batch."
+        - name: brewed_at
+          data_type: timestamp_ntz
+          description: "Brew timestamp."
+          data_tests: [not_null]
+        - name: brewed_date
+          data_type: date
+          description: "Brew date, derived from brewed_at."
+
+    contract:
+      enforced: true
+
+    acceptance_checks:
+      - "select count(*) from {{ ref('fct_brews') }} equals the row count of stg_alembic_ops__brew_events."
+      - "select count(*) from {{ ref('fct_brews') }} where batch_supply_cost_gold is null equals 0."
+      - "select count(*) from {{ ref('fct_brews') }} f left join {{ ref('dim_potions') }} p on f.potion_sku = p.potion_sku where p.potion_sku is null equals 0."
+      - "select count(*) from {{ ref('fct_brews') }} f left join {{ ref('dim_shops') }} s on f.shop_id = s.shop_id where s.shop_id is null equals 0."
+
+semantic_scope:
+  status: deferred
+  approved: []
+  deferred:
+    - "All supply-cost metrics/dimensions on fct_brews and dim_suppliers — decision d2 approved deferring semantic work to a later authoring-governed-metrics pass."
+
+
+validation:
+  build_selector: "+dim_suppliers +fct_brews"
+  structural_checks:
+    exact_model_count: 8
+    required_by_layer:
+      staging: 4
+      intermediate: 2
+      marts: 2
+    reject_unplanned_models: true
+    reject_unplanned_columns: true
+    reject_missing_tests: true
+    reject_unapproved_lineage: true
+  data_checks:
+    - "row counts: stg_alembic_ops__suppliers = 15, stg_alembic_ops__ingredients = 80, stg_alembic_ops__potion_ingredients = 406, stg_alembic_ops__brew_events = source row count, int_potion_supply_cost = 120, dim_suppliers = 15, fct_brews = source raw_brew_events row count."
+    - "int_potion_supply_cost.recipe_cost_gold is never null or <= 0 for any of the 120 potions."
+    - "fct_brews.batch_supply_cost_gold is never null; recomputing recipe_cost_gold * batch_size from fct_brews columns reconciles exactly."
+    - "fct_brews.potion_sku fully resolves against dim_potions; fct_brews.shop_id fully resolves against dim_shops."
+    - "accepted_values domains (region, unit, quality_check, harvest_season) reflect only the values profiled above."
+
+# Untouched by planning; only the build/implementation workflow may update this.
+verification:
+  status: not_run
+  completed_at: null
+  dbt_parse:
+    status: not_run
+    command: dbt parse
+  dbt_build:
+    status: not_run
+    command: null
+    invocation_id: null
+  sql_lint:
+    status: not_run
+    command: null
+  structural_checks:
+    status: not_run
+    findings: []
+  data_checks:
+    status: not_run
+    findings: []
+  deviations: []
+  ready_for_review: false
