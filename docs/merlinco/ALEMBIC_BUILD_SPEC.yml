@@ -882,23 +882,32 @@ validation:
     - "fct_brews standard_batch_supply_cost_gold = round(standard_unit_supply_cost_gold * batch_size, 2)"
 
 verification:
-  status: in_progress
-  completed_at: null
+  status: passed
+  completed_at: "2026-09-15 (implementation attempt via building-governed-source-to-mart)"
   dbt_parse:
-    status: not_run
-    command: dbt parse
+    status: passed
+    command: dbt parse --no-partial-parse
   dbt_build:
-    status: not_run
-    command: null
-    invocation_id: null
+    status: passed
+    command: dbt build --select +fct_brews +dim_suppliers dim_potions dim_shops
+    invocation_id: f3144041-924a-42c9-af5a-29027296f4c3
   sql_lint:
     status: not_run
-    command: null
+    command: "No standalone SQL lint tool is exposed in this environment; changed SQL follows the completed staging/intermediate/mart conventions. Route through the configured CI lint path (SQLFluff) before merge."
   structural_checks:
-    status: not_run
-    findings: []
+    status: passed
+    findings:
+      - "7 planned wizard models exist in dependency order: 4 staging (views), 1 ephemeral intermediate, 2 contracted marts. Exact count and paths match the spec."
+      - "Both marts enforce contracts; SQL final-CTE column order matches the enumerated properties columns and data types (parse + build succeeded with contracts on)."
+      - "No unplanned models, columns, tests, or lineage introduced; fct_brews uses only stg_alembic_ops__brew_events and int_potion_supply_cost; dim_suppliers uses only stg_alembic_ops__suppliers."
   data_checks:
-    status: not_run
-    findings: []
-  deviations: []
-  ready_for_review: false
+    status: passed
+    findings:
+      - "dim_suppliers: 15 rows, 15 distinct supplier_id, reliability_rating 1-5 no nulls, 5 canonical regions."
+      - "fct_brews: 20,000,000 rows and 20,000,000 distinct brew_id (all brew events preserved); zero null standard_unit_supply_cost_gold / standard_batch_supply_cost_gold; batch cost = round(unit * batch_size, 2) on every row (0 mismatches); quality_check has 2 values (pass/fail)."
+      - "int_potion_supply_cost grain confirmed via fct_brews: 120 potions, exactly one unit cost per potion, range 3.56-91.72 gold (matches source control total 356-9172 copper)."
+      - "All 12 fct_brews tests pass, including relationships to dim_potions and dim_shops (D2-a); staging + contract tests pass across the slice build (56 passed)."
+  deviations:
+    - "Approved build selector widened from '+fct_brews +dim_suppliers' to also build dim_potions and dim_shops (with their staging ancestors), because the approved D2-a relationship tests reference those completed marts, which were not materialized in this dev schema and had no deferrable production state. dim_potions/dim_shops are executed (built), not edited. The two relationship tests were run against the freshly built dev dims and passed. Non-design deviation; no change to model inventory, interfaces, formulas, or tests."
+  ready_for_review: true
+
