@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__shops__warlock
+    description: Cleaned Alembic Ops shops at one row per shop.
+    columns:
+      - name: shop_id
+        description: Shop identifier.
+        data_tests: [unique, not_null]
+
+  - name: stg_alembic_ops__suppliers__warlock
+    description: Cleaned Alembic Ops suppliers at one row per supplier.
+    columns:
+      - name: supplier_id
+        description: Supplier identifier.
+        data_tests: [unique, not_null]
+
+  - name: stg_alembic_ops__ingredients__warlock
+    description: Cleaned Alembic Ops ingredients at one row per ingredient.
+    columns:
+      - name: ingredient_id
+        description: Ingredient identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        description: Supplier responsible for the ingredient.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__suppliers__warlock')
+                field: supplier_id
+
+  - name: stg_alembic_ops__potion_ingredients__warlock
+    description: Cleaned potion recipe bridge at one row per potion and ingredient pair.
+    columns:
+      - name: potion_sku
+        description: Potion recipe identifier.
+        data_tests: [not_null]
+      - name: ingredient_id
+        description: Ingredient used by the recipe.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__ingredients__warlock')
+                field: ingredient_id
+
+  - name: stg_alembic_ops__brew_events__warlock
+    description: Cleaned Alembic Ops production batches at one row per brew.
+    columns:
+      - name: brew_id
+        description: Brew identifier.
+        data_tests: [unique, not_null]
+      - name: shop_id
+        description: Shop where the brew was produced.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops__warlock')
+                field: shop_id
+      - name: quality_check
+        description: Normalized brew quality result.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+
+  - name: int_potion_supply_cost__warlock
+    description: Recipe-level ingredient cost and procurement attributes at one row per potion.
+    columns:
+      - name: potion_sku
+        description: Potion recipe identifier.
+        data_tests: [unique, not_null]
+      - name: potion_supply_cost_copper
+        description: Ingredient cost for one potion batch-size unit, denominated in copper.
+        data_tests: [not_null]
+
+  - name: fct_brews__warlock
+    description: Alembic production facts enriched with shop context and recipe supply cost at one row per brew.
+    columns:
+      - name: brew_id
+        description: Brew identifier and model grain.
+        data_tests: [unique, not_null]
+      - name: brewed_at
+        description: Timestamp when brewing began.
+        data_tests: [not_null]
+      - name: batch_size
+        description: Number of potion units produced.
+        data_tests: [not_null]
+      - name: quality_check
+        description: Normalized brew quality result.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: batch_supply_cost_copper
+        description: Estimated ingredient supply cost for the full brew batch, denominated in copper.
+        data_tests: [not_null]
