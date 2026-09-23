@@ -1,0 +1,138 @@
+version: 2
+
+models:
+  - name: stg_alembic_ops__suppliers
+    description: Supplier staging view at one row per supplier with typed procurement attributes.
+    columns:
+      - name: supplier_id
+        description: Primary key — supplier identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_name
+        description: Supplier display name.
+        data_tests: [not_null]
+      - name: region
+        description: Canonical supplier region.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Northern Reaches", "Ember Coast", "Silverwood", "The Marshlands", "Crystal Vale"]
+      - name: reliability_rating
+        description: Supplier reliability rating from 1 through 5.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: contracted_since
+        description: Date the supplier contract began.
+        data_tests: [not_null]
+
+  - name: stg_alembic_ops__ingredients
+    description: Ingredient staging view at one row per ingredient with current catalog unit cost and normalized operational attributes.
+    columns:
+      - name: ingredient_id
+        description: Primary key — ingredient identifier.
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        description: FK to the current ingredient supplier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__suppliers')
+                field: supplier_id
+      - name: unit
+        description: Ingredient costing unit, lowercased and trimmed.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+      - name: unit_cost_copper
+        description: Current catalog cost per ingredient unit in copper pieces.
+        data_tests: [not_null]
+      - name: unit_cost_gold
+        description: Current catalog cost per ingredient unit in gold crowns, equal to unit_cost_copper divided by 100.
+        data_tests: [not_null]
+      - name: is_hazardous
+        description: Whether the ingredient is hazardous after boolean normalization.
+        data_tests: [not_null]
+      - name: harvest_season
+        description: Source harvest season with canonical source case preserved.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Autumn, Spring, Summer, Winter, Year-round]
+
+  - name: stg_alembic_ops__potion_ingredients
+    description: Standard potion recipe bridge at one row per potion and ingredient pair.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [potion_sku, ingredient_id]
+    columns:
+      - name: potion_sku
+        description: Potion component of the recipe composite key and FK to staged potions.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: ingredient_id
+        description: Ingredient component of the recipe composite key and FK to staged ingredients.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__ingredients')
+                field: ingredient_id
+      - name: quantity
+        description: Standard quantity of this ingredient required per potion unit, expressed in unit.
+        data_tests: [not_null]
+      - name: unit
+        description: Recipe quantity unit, lowercased and trimmed.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bundle, dram, gram, pinch, sprig, vial]
+
+  - name: stg_alembic_ops__brew_events
+    description: Brew-event staging view at one row per production batch; all quality outcomes are retained and duration remains nullable.
+    columns:
+      - name: brew_id
+        description: Primary key — brew event identifier.
+        data_tests: [unique, not_null]
+      - name: potion_sku
+        description: FK to the brewed potion.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_abra_pos__potions')
+                field: potion_sku
+      - name: shop_id
+        description: FK to the producing shop.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_alembic_ops__shops')
+                field: shop_id
+      - name: quality_check
+        description: Brew quality result, lowercased and trimmed; both pass and fail events are retained.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, fail]
+      - name: batch_size
+        description: Number of potion units produced in the recorded batch.
+        data_tests: [not_null]
+      - name: brewed_at
+        description: Brew completion timestamp as timestamp_ntz.
+        data_tests: [not_null]
